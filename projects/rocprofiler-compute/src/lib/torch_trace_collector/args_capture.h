@@ -25,15 +25,17 @@ inline constexpr std::size_t kMaxArgsLen = 512;
 // Maximum number of operator inputs rendered into an args blob.
 inline constexpr std::size_t kMaxArgItems = 32;
 
-// Truncate an args blob to kMaxArgsLen and append "...".
+// Truncate an over-length args blob to kMaxArgsLen characters and append an
+// ellipsis, keeping the closing ')' when the blob is parenthesized.
 inline std::string cap_args_blob(std::string blob)
 {
     if (blob.size() <= kMaxArgsLen)
     {
         return blob;
     }
+    const bool balanced = !blob.empty() && blob.front() == '(' && blob.back() == ')';
     blob.resize(kMaxArgsLen);
-    blob += "...";
+    blob += balanced ? "...)" : "...";
     return blob;
 }
 
