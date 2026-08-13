@@ -247,9 +247,9 @@ def Main(amdsmi, file_names):
         amdsmi_map[func_name] = {
             "tested": 0,
             "c_unit_test": 0,
-            "c_integration": 0,
+            "c_func_test": 0,
             "py_unit_test": 0,
-            "py_integration": 0,
+            "py_func_test": 0,
         }
     # api_map[file_name][func_name] = number_times_called
     for file_name in api_map:
@@ -265,10 +265,10 @@ def Main(amdsmi, file_names):
             amdsmi_map[func_name][file_name] = 1
 
     api_summary = []
-    msg = f"API, Tested, c_unit_test, c_integration, py_unit_test, py_integration"
+    msg = f"API, Tested, c_unit_test, c_func_test, py_unit_test, py_func_test"
     api_summary.append(msg)
     for func_name, tests_map in amdsmi_map.items():
-        msg = f"{func_name}, {tests_map['tested']}, {tests_map['c_unit_test']}, {tests_map['c_integration']}, {tests_map['py_unit_test']}, {tests_map['py_integration']}"
+        msg = f"{func_name}, {tests_map['tested']}, {tests_map['c_unit_test']}, {tests_map['c_func_test']}, {tests_map['py_unit_test']}, {tests_map['py_func_test']}"
         api_summary.append(msg)
     api_summary.append("")
     api_summary = "\n".join(api_summary)
@@ -291,23 +291,23 @@ def Main(amdsmi, file_names):
         c_any = 0
         py_any = 0
         if values["tested"]:
-            if values["c_unit_test"] or values["c_integration"]:
+            if values["c_unit_test"] or values["c_func_test"]:
                 c_any = 1
                 c_any_total += 1
                 if values["c_unit_test"]:
                     c_unit_test_total += 1
-                if values["c_integration"]:
+                if values["c_func_test"]:
                     c_integration_total += 1
 
-            if values["py_unit_test"] or values["py_integration"]:
+            if values["py_unit_test"] or values["py_func_test"]:
                 py_any = 1
                 py_any_total += 1
                 if values["py_unit_test"]:
                     py_unit_test_total += 1
-                if values["py_integration"]:
+                if values["py_func_test"]:
                     py_integration_total += 1
 
-            if values["c_integration"] or values["py_integration"]:
+            if values["c_func_test"] or values["py_func_test"]:
                 integration_total += 1
 
             if values["c_unit_test"] or values["py_unit_test"]:
@@ -315,9 +315,9 @@ def Main(amdsmi, file_names):
 
             if (
                 values["c_unit_test"]
-                or values["c_integration"]
+                or values["c_func_test"]
                 or values["py_unit_test"]
-                or values["py_integration"]
+                or values["py_func_test"]
             ):
                 any_total += 1
 
@@ -329,7 +329,7 @@ def Main(amdsmi, file_names):
             Print("DEBUG", f" Tested:", ending="")
         Print(
             "DEBUG",
-            f" {func_name}: C(any={c_any} unit={values['c_unit_test']} int={values['c_integration']}) py(any={py_any} unit={values['py_unit_test']} int={values['py_integration']})",
+            f" {func_name}: C(any={c_any} unit={values['c_unit_test']} int={values['c_func_test']}) py(any={py_any} unit={values['py_unit_test']} int={values['py_func_test']})",
         )
 
     # Create summary report
@@ -443,18 +443,18 @@ def Parse_Command_Line(cmds=None):
         help="Filename for C unit_test output, default=%(default)s",
     )
     parser_logs.add_argument(
-        "--c_integration",
-        default="_amdsmitst.log",
+        "--c_func_test",
+        default="_c_func_test.log",
         help="Filename for C integration_test output, default=%(default)s",
     )
     parser_logs.add_argument(
         "--py_unit_test",
-        default="_unit_test.log",
+        default="_py_unit_test.log",
         help="Filename for Python unit_test output, default=%(default)s",
     )
     parser_logs.add_argument(
-        "--py_integration",
-        default="_integration_test.log",
+        "--py_func_test",
+        default="_py_func_test.log",
         help="Filename for Python integration_test output, default=%(default)s",
     )
     parser_output = parser.add_argument_group("Output File")
@@ -480,9 +480,9 @@ def Parse_Command_Line(cmds=None):
 
     args.file_names = {}
     args.file_names["c_unit_test"] = args.c_unit_test
-    args.file_names["c_integration"] = args.c_integration
+    args.file_names["c_func_test"] = args.c_func_test
     args.file_names["py_unit_test"] = args.py_unit_test
-    args.file_names["py_integration"] = args.py_integration
+    args.file_names["py_func_test"] = args.py_func_test
     return args
 
 
