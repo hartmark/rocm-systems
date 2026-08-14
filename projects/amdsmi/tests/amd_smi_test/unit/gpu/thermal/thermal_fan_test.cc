@@ -179,13 +179,9 @@ TEST(GpuUnit, GetTempMetric_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(GpuUnit, GetTempMetric_AllGpusAllTypesMetrics) {
-#if 0  // jcnii
-#else
-
   GTEST_SKIP()
       << "GetTempMetric_AllGpusAllTypesMetrics fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
 
-#endif
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_temp_metric");
   if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";

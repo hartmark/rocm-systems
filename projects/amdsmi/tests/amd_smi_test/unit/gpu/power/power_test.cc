@@ -48,12 +48,8 @@ TEST(GpuUnit, GetEnergyCount_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(GpuUnit, GetEnergyCount_AllGpus) {
-#if 0  // jcnii
-#else
-
   GTEST_SKIP() << "GetEnergyCount_AllGpus fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
 
-#endif
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_energy_count");
   if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";

@@ -56,12 +56,8 @@ TEST(GpuUnit, GetClkFreq_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(GpuUnit, GetClkFreq_AllGpusAllTypes) {
-#if 0  // jcnii
-#else
-
   GTEST_SKIP() << "GetClkFreq_AllGpusAllTypes fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
 
-#endif
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_clk_freq");
   if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
@@ -102,12 +98,8 @@ TEST(GpuUnit, GetClockInfo_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(GpuUnit, GetClockInfo_AllGpusAllTypes) {
-#if 0  // jcnii
-#else
-
   GTEST_SKIP() << "GetClkInfo_AllGpusAllTypes fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
 
-#endif
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_clock_info");
   if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
