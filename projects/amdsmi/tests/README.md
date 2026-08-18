@@ -1,4 +1,7 @@
 # API Summary Report
+
+For build and run instructions for the C++ test binary see [`amd_smi_test/README.md`](amd_smi_test/README.md).
+
 ## Overview
 The API summary report is generated from reading the amdsmi.h header file and the output from the python and C++ tests.  The python script, api_summary.py, will build a table from the available test log files.
 
@@ -7,8 +10,8 @@ Run the python and C++ tests prior to running api_summary.py script.  The prefer
 
 <u>The python scripts are in the directory /opt/rocm/share/amd_smi/tests/python_unittest</u>
 ```
-sudo unit_tests.py -v > _unit_test.log 2> _unit_test_err.log
-sudo integration_test.py -v > _integration_test.log 2> _integration_test_err.log
+sudo unit_tests.py -v > _py_unit_test.log 2> _py_unit_test_err.log
+sudo integration_test.py -v > _py_func_test.log 2> _py_func_test_err.log
 ```
 
 <u>The C++ test is in the directory /opt/rocm/share/amd_smi/tests</u>
@@ -18,7 +21,7 @@ To run with ASIC-specific test exclusions (recommended):
 cd /opt/rocm/share/amd_smi/tests
 source amdsmitst.exclude
 source detect_asic_filter.sh
-sudo ./amdsmitst --gtest_filter="-${GTEST_EXCLUDE}" -v 1 > _amdsmitst.log 2> _amdsmitst_err.log
+sudo ./amdsmitst --gtest_filter="-${GTEST_EXCLUDE}" -v 1 > _c_func_test.log 2> _c_func_test_err.log
 ```
 
 `detect_asic_filter.sh` reads the KFD topology to detect the installed ASIC
@@ -32,7 +35,7 @@ To run without ASIC-specific exclusions (uses only the global blacklist):
 ```
 cd /opt/rocm/share/amd_smi/tests
 source amdsmitst.exclude
-sudo ./amdsmitst --gtest_filter="-${BLACKLIST_ALL_ASICS}" -v 1 > _amdsmitst.log 2> _amdsmitst_err.log
+sudo ./amdsmitst --gtest_filter="-${BLACKLIST_ALL_ASICS}" -v 1 > _c_func_test.log 2> _c_func_test_err.log
 ```
 
 ## How to Run Summary Report
@@ -47,12 +50,12 @@ Log Files:
     Path to where logs exist, default=build
   --c_unit_test C_UNIT_TEST
     Filename for C unit_test output, default=_c_unit_test.log
-  --c_integration C_INTEGRATION
-    Filename for C integration_test output, default=_c_integration.log
+  --c_func_test C_FUNC_TEST
+    Filename for C func_test output, default=_c_func_test.log
   --py_unit_test PY_UNIT_TEST
     Filename for Python unit_test output, default=_py_unit_test.log
-  --py_integration PY_INTEGRATION
-    Filename for Python integration_test output, default=_py_integration.log
+  --py_func_test PY_FUNC_TEST
+    Filename for Python func_test output, default=_py_func_test.log
 Output File:
   --output_dir OUTPUT_DIR
     Path to output file, default=.
@@ -98,7 +101,7 @@ api_summary.py --amdsmi ./amdsmi.h --log_dir . --output_dir .
   <summary>Click for example: <i><b>api_summary.csv</i></b></summary>
 
 ~~~shell
-API, Tested, c_unit_test, c_integration, py_unit_test, py_integration
+API, Tested, c_unit_test, c_func_test, py_unit_test, py_func_test
 amdsmi_init, 2, 0, 0, 1, 1
 amdsmi_shut_down, 2, 0, 0, 1, 1
 amdsmi_get_socket_handles, 2, 0, 0, 1, 1

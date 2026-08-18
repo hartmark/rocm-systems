@@ -451,9 +451,9 @@ TEST(GpuUnit, GetSubsystemName_AllGpus) {
 // crashes (segfault/abort) rather than returning a status. Skipped until the
 // library validates the argument; the proper return is AMDSMI_STATUS_INVAL.
 TEST(GpuUnit, GetXcdCounter_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
   GTEST_SKIP() << "amdsmi_get_gpu_xcd_counter crashes on a null output pointer; proper return "
                   "should be AMDSMI_STATUS_INVAL";
+  amdsmi::unittest::UnitDevices dev;
   // Proper contract once fixed:
   //   amdsmi_status_t err = amdsmi_get_gpu_xcd_counter(dev.gpus()[0], nullptr);
   //   AMDSMI_EXPECT_NULL_ARG(err);
@@ -468,7 +468,8 @@ TEST(GpuUnit, GetXcdCounter_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(GpuUnit, GetXcdCounter_AllGpus) {
-  GTEST_SKIP() << "GetXcdCounter_AllGpus fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_get_gpu_xcd_counter returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause "
+                  "unknown, under investigation";
 
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_xcd_counter");

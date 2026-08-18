@@ -137,9 +137,9 @@ TEST(GpuUnit, DestroyCounter_InvalidHandle) {
 // crashes (segfault/abort) rather than returning a status. Skipped until the
 // library validates the argument; the proper return is AMDSMI_STATUS_INVAL.
 TEST(GpuUnit, ControlCounter_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
   GTEST_SKIP() << "amdsmi_gpu_control_counter crashes on an invalid handle; proper return "
                   "should be AMDSMI_STATUS_INVAL";
+  amdsmi::unittest::UnitDevices dev;
   // Proper contract once fixed:
   //   amdsmi_status_t err = amdsmi_gpu_control_counter(kInvalidHandle, AMDSMI_CNTR_CMD_START,
   //   nullptr); AMDSMI_EXPECT_NULL_ARG(err);
@@ -169,7 +169,8 @@ TEST(GpuUnit, ReadCounter_InvalidHandle) {
 
 // ---------------- valid create/control/read/destroy flow ----------------
 TEST(GpuUnit, CounterLifecycle_AllGpus) {
-  GTEST_SKIP() << "CounterLifecycle_AllGpus fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_gpu_create_event/control_counter returns AMDSMI_STATUS_UNEXPECTED_DATA; "
+                  "root cause unknown, under investigation";
 
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_gpu_create_counter");

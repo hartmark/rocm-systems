@@ -78,9 +78,9 @@ TEST(SystemUnit, GetLibVersion_Valid) {
 // crashes (segfault/abort) rather than returning a status. Skipped until the
 // library validates the argument; the proper return is AMDSMI_STATUS_INVAL.
 TEST(SystemUnit, StatusCodeToString_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
   GTEST_SKIP() << "amdsmi_status_code_to_string crashes on a null output pointer; proper return "
                   "should be AMDSMI_STATUS_INVAL";
+  amdsmi::unittest::UnitDevices dev;
   // Proper contract once fixed:
   //   amdsmi_status_t err = amdsmi_status_code_to_string(AMDSMI_STATUS_SUCCESS, nullptr);
   //   AMDSMI_EXPECT_NULL_ARG(err);

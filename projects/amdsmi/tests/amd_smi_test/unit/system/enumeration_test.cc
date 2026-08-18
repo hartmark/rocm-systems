@@ -357,7 +357,8 @@ TEST(SystemUnit, GetProcessorHandleFromBdf_NullOutput) {
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
 TEST(SystemUnit, GetProcessorHandleFromBdf_ZeroBdf) {
-  GTEST_SKIP() << "GetProcessorHandleFromBdf_ZeroBdf fails with error 7, AMDSMI_STATUS_API_FAILED";
+  GTEST_SKIP() << "amdsmi_get_processor_handle_from_bdf returns AMDSMI_STATUS_API_FAILED for zero "
+                  "BDF; should return NOT_FOUND or INVAL, library validation bug";
 
   amdsmi::unittest::UnitDevices dev;
   amdsmi_bdf_t bdf;

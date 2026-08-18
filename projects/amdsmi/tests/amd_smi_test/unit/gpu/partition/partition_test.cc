@@ -408,6 +408,8 @@ TEST(GpuUnit, SetComputePartition_AllGpusSentinel) {
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
+    AMDSMI_EXPECT_STATUS(err, AMDSMI_STATUS_INVAL, AMDSMI_STATUS_NOT_SUPPORTED,
+                         AMDSMI_STATUS_NOT_YET_IMPLEMENTED, AMDSMI_STATUS_NO_PERM);
   }
 }
 TEST(GpuUnit, SetMemoryPartition_InvalidHandle) {
@@ -431,6 +433,8 @@ TEST(GpuUnit, SetMemoryPartition_AllGpusSentinel) {
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
+    AMDSMI_EXPECT_STATUS(err, AMDSMI_STATUS_INVAL, AMDSMI_STATUS_NOT_SUPPORTED,
+                         AMDSMI_STATUS_NOT_YET_IMPLEMENTED, AMDSMI_STATUS_NO_PERM);
   }
 }
 TEST(GpuUnit, SetMemoryPartitionMode_InvalidHandle) {
@@ -454,6 +458,8 @@ TEST(GpuUnit, SetMemoryPartitionMode_AllGpusSentinel) {
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
+    AMDSMI_EXPECT_STATUS(err, AMDSMI_STATUS_INVAL, AMDSMI_STATUS_NOT_SUPPORTED,
+                         AMDSMI_STATUS_NOT_YET_IMPLEMENTED, AMDSMI_STATUS_NO_PERM);
   }
 }
 TEST(GpuUnit, SetAcceleratorPartitionProfile_InvalidHandle) {
@@ -471,9 +477,12 @@ TEST(GpuUnit, SetAcceleratorPartitionProfile_AllGpusSentinel) {
   for (size_t i = 0; i < dev.gpus().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_accelerator_partition_profile",
                        "gpu=" + std::to_string(i) + " sentinel", kVerbose);
-    amdsmi_status_t err = amdsmi_set_gpu_accelerator_partition_profile(dev.gpus()[i], 0xFFFFFFFF);
+    amdsmi_status_t err = amdsmi_set_gpu_accelerator_partition_profile(
+        dev.gpus()[i], 0xFFFFFFFF);  // out-of-range profile ID — no named invalid value
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
+    AMDSMI_EXPECT_STATUS(err, AMDSMI_STATUS_INVAL, AMDSMI_STATUS_NOT_SUPPORTED,
+                         AMDSMI_STATUS_NOT_YET_IMPLEMENTED, AMDSMI_STATUS_NO_PERM);
   }
 }

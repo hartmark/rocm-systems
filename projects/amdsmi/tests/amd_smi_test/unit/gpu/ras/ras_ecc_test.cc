@@ -303,7 +303,8 @@ TEST(GpuUnit, ValidateRasEeprom_AllGpus) {
 
 // ---------------- amdsmi_get_gpu_cper_entries ----------------
 TEST(GpuUnit, GetCperEntries_NullOutput) {
-  GTEST_SKIP() << "GetCperEntries_NullOutput fails with error 15, AMDSMI_STATUS_OUT_OF_RESOURCES";
+  GTEST_SKIP() << "amdsmi_get_gpu_cper_entries returns OUT_OF_RESOURCES instead of INVAL for null "
+                  "pointer; library input-validation bug";
 
   amdsmi::unittest::UnitDevices dev;
   if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
@@ -368,7 +369,8 @@ TEST(GpuUnit, GetAfidsFromCper_NullOutput) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(GpuUnit, GetAfidsFromCper_DummyBuffer) {
-  GTEST_SKIP() << "GetAfidsFromCper_DummyBuffer fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_get_afids_from_cper returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause "
+                  "unknown, under investigation";
 
   amdsmi::unittest::UnitDevices dev;
   char cper_buffer[256];

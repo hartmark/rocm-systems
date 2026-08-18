@@ -93,7 +93,8 @@ TEST(SystemUnit, GetGpuXgmiLinkStatus_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(SystemUnit, GetGpuXgmiLinkStatus_AllGpus) {
-  GTEST_SKIP() << "GetGpuXgmiLinkStatus_AllGpus fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_get_xgmi_info returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause unknown, "
+                  "under investigation";
 
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_xgmi_link_status");
@@ -134,7 +135,8 @@ TEST(SystemUnit, GetLinkMetrics_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(SystemUnit, GetLinkMetrics_AllGpus) {
-  GTEST_SKIP() << "GetLinkMetrics_AllGpus fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_get_link_metrics returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause "
+                  "unknown, under investigation";
 
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_link_metrics");
@@ -160,10 +162,10 @@ TEST(SystemUnit, GetLinkMetrics_AllGpus) {
 // and crashes (segfault/abort) rather than returning a status. Skipped until the library validates
 // the argument; the proper return is AMDSMI_STATUS_INVAL.
 TEST(SystemUnit, TopoGetNumaNodeNumber_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
   GTEST_SKIP()
       << "amdsmi_topo_get_numa_node_number crashes on a null output pointer; proper return "
          "should be AMDSMI_STATUS_INVAL";
+  amdsmi::unittest::UnitDevices dev;
   // Proper contract once fixed:
   //   amdsmi_status_t err = amdsmi_topo_get_numa_node_number(dev.gpus()[0], nullptr);
   //   AMDSMI_EXPECT_NULL_ARG(err);

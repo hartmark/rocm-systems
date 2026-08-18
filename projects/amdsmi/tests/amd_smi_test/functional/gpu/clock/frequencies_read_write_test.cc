@@ -44,7 +44,8 @@ void TestFrequenciesReadWrite::Close() {
 }
 
 void TestFrequenciesReadWrite::Run(void) {
-  GTEST_SKIP() << "TestFrequenciesReadWrite fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_set_clk_freq returns AMDSMI_STATUS_UNEXPECTED_DATA in "
+                  "TestFrequenciesReadWrite; root cause unknown, under investigation";
 
   amdsmi_status_t ret;
   amdsmi_frequencies_t f;

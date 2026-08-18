@@ -66,7 +66,8 @@ static void print_frequencies(amdsmi_frequencies_t* f, uint32_t* l = nullptr) {
 }
 
 void TestFrequenciesRead::Run(void) {
-  GTEST_SKIP() << "TestFrequenciesRead fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_get_clk_freq returns AMDSMI_STATUS_UNEXPECTED_DATA in "
+                  "TestFrequenciesRead; root cause unknown, under investigation";
 
   amdsmi_status_t err;
   amdsmi_frequencies_t f;

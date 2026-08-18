@@ -49,6 +49,7 @@ using amdsmi::unittest::kVerbose;
   }                                                                                          \
   TEST(GpuUnit, TESTBASE##_AllGpus) {                                                        \
     amdsmi::unittest::UnitDevices dev;                                                       \
+    amdsmi::unittest::StatusCollector amdsmi_col(#APINAME);                                  \
     if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";                             \
     for (size_t i = 0; i < dev.gpus().size(); ++i) {                                         \
       STRUCT info;                                                                           \
@@ -57,7 +58,12 @@ using amdsmi::unittest::kVerbose;
       amdsmi_status_t err = APINAME(dev.gpus()[i], &info);                                   \
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,        \
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED); \
+      amdsmi_col.Record("gpu=" + std::to_string(i), err,                                     \
+                        ::amdsmi::unittest::AmdsmiStatusIsExpected(                          \
+                            err, AMDSMI_STATUS_SUCCESS, AMDSMI_STATUS_NOT_SUPPORTED,         \
+                            AMDSMI_STATUS_NOT_YET_IMPLEMENTED));                             \
     }                                                                                        \
+    amdsmi_col.ExpectNoFailures();                                                           \
   }
 
 UNIT_GPU_STRUCT_GETTER(GetDriverInfo, amdsmi_get_gpu_driver_info, amdsmi_driver_info_t)

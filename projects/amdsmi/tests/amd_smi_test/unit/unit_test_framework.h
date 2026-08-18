@@ -41,14 +41,8 @@ inline constexpr bool kVerbose = true;
 // Sentinel used for invalid-handle negative tests.
 inline constexpr amdsmi_processor_handle kInvalidHandle = nullptr;
 
-// Per-test harness. Constructed as a local at the top of each test, it drives the
-// same TestBase lifecycle the functional tests use so the output carries the
-// #### delimiter and the TEST NAME / DESCRIPTION / SETUP / EXECUTION sections;
-// its destructor emits TEST RESULTS / CLEAN UP and shuts AMD SMI down, keeping
-// every test balanced (the reference-count suite requires init to return to
-// zero between tests). The enumerated processor handles are split into per-type
-// lists the tests consume; on a machine without a driver TestBase::SetUp() marks
-// setup_failed_ and tests skip via GTEST_SKIP() on the empty lists.
+// Per-test RAII harness wrapping TestBase. Destructor shuts AMD SMI down so each
+// test leaves the refcount at zero (required by the init/shutdown refcount tests).
 class UnitDevices : public TestBase {
  public:
   UnitDevices() {
@@ -127,6 +121,8 @@ class UnitDevices : public TestBase {
           cpu_cores_.clear();
       }
     }
+    // NIC handles are socket-scoped; amdsmi_get_nic_processor_handles is NIC-specific
+    // unlike the CPU/core APIs which are socketless.
     if (nics_.empty()) {
       for (auto socket : sockets_) {
         uint32_t nic_count = 0;
@@ -192,6 +188,11 @@ class StatusCollector {
  public:
   explicit StatusCollector(std::string api) : api_(std::move(api)) {}
 
+  ~StatusCollector() {
+    if (total_ > 0 && !reported_)
+      ADD_FAILURE() << api_ << ": StatusCollector destroyed without calling ExpectNoFailures()";
+  }
+
   void Record(const std::string& input, amdsmi_status_t err, bool expected) {
     ++total_;
     if (!expected) {
@@ -199,7 +200,8 @@ class StatusCollector {
     }
   }
 
-  void ExpectNoFailures() const {
+  void ExpectNoFailures() {
+    reported_ = true;
     if (failures_.empty()) return;
     std::string msg = api_ + ": " + std::to_string(failures_.size()) + " of " +
                       std::to_string(total_) + " input(s) returned an unexpected status:";
@@ -210,6 +212,7 @@ class StatusCollector {
  private:
   std::string api_;
   std::size_t total_ = 0;
+  bool reported_ = false;
   std::vector<std::string> failures_;
 };
 

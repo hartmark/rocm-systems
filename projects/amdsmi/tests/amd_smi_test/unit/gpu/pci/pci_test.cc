@@ -48,7 +48,8 @@ TEST(GpuUnit, GetPciBandwidth_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(GpuUnit, GetPciBandwidth_AllGpus) {
-  GTEST_SKIP() << "GetPciBandwidth_AllGpus fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_get_pcie_bandwidth returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause "
+                  "unknown, under investigation";
 
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_pci_bandwidth");
@@ -191,7 +192,8 @@ TEST(GpuUnit, SetPciBandwidth_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(GpuUnit, SetPciBandwidth_AllGpus) {
-  GTEST_SKIP() << "SetPciBandwidth_AllGpus fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_set_gpu_pci_bandwidth returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause "
+                  "unknown, under investigation";
 
   amdsmi::unittest::UnitDevices dev;
   AMDSMI_SKIP_IF_MUTATION_DISABLED();
@@ -232,7 +234,8 @@ TEST(GpuUnit, GetPcieInfo_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(GpuUnit, GetPcieInfo_AllGpus) {
-  GTEST_SKIP() << "GetPcieInfo_AllGpus fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_get_pcie_info returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause unknown, "
+                  "under investigation";
 
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_pcie_info");

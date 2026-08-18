@@ -36,10 +36,10 @@ static constexpr amdsmi_reg_type_t kRegTypes[] = {AMDSMI_REG_XGMI, AMDSMI_REG_WA
 // and crashes (segfault/abort) rather than returning a status. Skipped until the library validates
 // the argument; the proper return is AMDSMI_STATUS_INVAL.
 TEST(GpuUnit, GetMetricsHeaderInfo_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
   GTEST_SKIP()
       << "amdsmi_get_gpu_metrics_header_info crashes on a null output pointer; proper return "
          "should be AMDSMI_STATUS_INVAL";
+  amdsmi::unittest::UnitDevices dev;
   // Proper contract once fixed:
   //   amdsmi_status_t err = amdsmi_get_gpu_metrics_header_info(dev.gpus()[0], nullptr);
   //   AMDSMI_EXPECT_NULL_ARG(err);
@@ -93,7 +93,8 @@ TEST(GpuUnit, GetMetricsInfo_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 TEST(GpuUnit, GetMetricsInfo_AllGpus) {
-  GTEST_SKIP() << "GetXcdCounter_AllGpus fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
+  GTEST_SKIP() << "amdsmi_get_gpu_metrics_info returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause "
+                  "unknown, under investigation";
 
   amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_metrics_info");

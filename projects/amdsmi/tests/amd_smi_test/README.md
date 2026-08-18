@@ -121,7 +121,15 @@ hardware — set:
 
 ```shell
 AMDSMI_TEST_DISALLOW_MUTATION=1 ./amdsmitst --gtest_filter="*Unit*"
+
+# Also works across all test types:
+AMDSMI_TEST_DISALLOW_MUTATION=1 ./amdsmitst
 ```
+
+## Known test skips
+
+Unconditional skips due to driver or library issues are tracked in
+[`known_failures.md`](known_failures.md).
 
 ## Verbosity and logging
 
@@ -129,7 +137,7 @@ AMDSMI_TEST_DISALLOW_MUTATION=1 ./amdsmitst --gtest_filter="*Unit*"
 logs (used by the API summary report — see [`tests/README.md`](../README.md)):
 
 ```shell
-sudo ./amdsmitst -v 1 > _amdsmitst.log 2> _amdsmitst_err.log
+sudo ./amdsmitst -v 1 > _c_func_test.log 2> _c_func_test_err.log
 ```
 
 Each test prints a framed section outline:

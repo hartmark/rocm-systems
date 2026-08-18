@@ -100,16 +100,17 @@ TEST(GpuFunctionalReadOnly, ReadCounter_NullValue) {
 // argument; the proper return is AMDSMI_STATUS_INVAL. Exercised with a real
 // handle in the lifecycle workflow below.
 TEST(GpuFunctionalReadOnly, ControlCounter_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
   GTEST_SKIP() << "amdsmi_gpu_control_counter crashes on an invalid handle; "
                   "proper return should be AMDSMI_STATUS_INVAL";
+  amdsmi::unittest::UnitDevices dev;
 }
 
 // ---------------- full counter lifecycle: create -> start -> read -> stop -> destroy
 // ---------------- Perf counters only monitor (no device-config change) and destroy() releases
 // exactly what create() allocated, so this is not gated behind the mutation flag.
 TEST(GpuFunctionalReadOnly, Counter_LifecycleWorkflow) {
-  GTEST_SKIP() << "Counter_LifecycleWorkflow fails with error 42, AMDSMI_STATUS_UNEXPECTED_SIZE";
+  GTEST_SKIP() << "counter lifecycle returns AMDSMI_STATUS_UNEXPECTED_SIZE; root cause unknown, "
+                  "under investigation";
 
   amdsmi::unittest::UnitDevices dev;
   if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
