@@ -74,9 +74,6 @@ TEST(SystemUnit, GetLibVersion_Valid) {
 }
 
 // ---- amdsmi_status_code_to_string : invalid params first ----
-// amdsmi_status_code_to_string() dereferences a null output pointer instead of validating it and
-// crashes (segfault/abort) rather than returning a status. Skipped until the
-// library validates the argument; the proper return is AMDSMI_STATUS_INVAL.
 TEST(SystemUnit, StatusCodeToString_NullOutput) {
   GTEST_SKIP() << "amdsmi_status_code_to_string crashes on a null output pointer; proper return "
                   "should be AMDSMI_STATUS_INVAL";

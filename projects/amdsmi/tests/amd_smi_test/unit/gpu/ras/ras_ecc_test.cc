@@ -305,17 +305,12 @@ TEST(GpuUnit, ValidateRasEeprom_AllGpus) {
 TEST(GpuUnit, GetCperEntries_NullOutput) {
   GTEST_SKIP() << "amdsmi_get_gpu_cper_entries returns OUT_OF_RESOURCES instead of INVAL for null "
                   "pointer; library input-validation bug";
-
   amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  char cper_data[4096];
-  memset(cper_data, 0, sizeof(cper_data));
-  DISPLAY_AMDSMI_API("amdsmi_get_gpu_cper_entries", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_cper_entries(dev.gpus()[0], 0xFFFFFFFF, cper_data, nullptr,
-                                                    nullptr, nullptr, nullptr);
-  DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
-                        AMDSMI_STATUS_ARG_PTR_NULL);
-  AMDSMI_EXPECT_NULL_ARG(err);
+  // Proper contract once fixed:
+  //   char cper_data[4096]; memset(cper_data, 0, sizeof(cper_data));
+  //   amdsmi_status_t err = amdsmi_get_gpu_cper_entries(dev.gpus()[0], 0xFFFFFFFF,
+  //       cper_data, nullptr, nullptr, nullptr, nullptr);
+  //   AMDSMI_EXPECT_NULL_ARG(err);
 }
 TEST(GpuUnit, GetCperEntries_InvalidHandle) {
   amdsmi::unittest::UnitDevices dev;

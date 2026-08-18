@@ -133,9 +133,6 @@ TEST(GpuUnit, DestroyCounter_InvalidHandle) {
 }
 
 // ---------------- amdsmi_gpu_control_counter (invalid) ----------------
-// amdsmi_gpu_control_counter() dereferences an invalid handle instead of validating it and
-// crashes (segfault/abort) rather than returning a status. Skipped until the
-// library validates the argument; the proper return is AMDSMI_STATUS_INVAL.
 TEST(GpuUnit, ControlCounter_InvalidHandle) {
   GTEST_SKIP() << "amdsmi_gpu_control_counter crashes on an invalid handle; proper return "
                   "should be AMDSMI_STATUS_INVAL";

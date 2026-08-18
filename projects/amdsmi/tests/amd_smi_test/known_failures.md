@@ -51,8 +51,10 @@ an undocumented status instead of the expected `AMDSMI_STATUS_INVAL`.
 |-----|-----|-----------------|
 | `amdsmi_status_code_to_string` | Crashes on `nullptr` output pointer; should return `AMDSMI_STATUS_INVAL` | `SystemUnit.StatusCodeToString_NullOutput` |
 | `amdsmi_get_gpu_xcd_counter` | Crashes on `nullptr` output pointer; should return `AMDSMI_STATUS_INVAL` | `GpuUnit.GetXcdCounter_NullOutput` |
-| `amdsmi_gpu_control_counter` | Crashes on invalid processor handle; should return `AMDSMI_STATUS_INVAL` | `GpuUnit.ControlCounter_InvalidHandle`, `GpuFunctionalReadWrite.ControlCounter_InvalidHandle` |
+| `amdsmi_gpu_control_counter` | Crashes on invalid processor handle; should return `AMDSMI_STATUS_INVAL` | `GpuUnit.ControlCounter_InvalidHandle`, `GpuFunctionalReadOnly.ControlCounter_InvalidHandle` |
 | `amdsmi_get_gpu_cper_entries` | Returns `AMDSMI_STATUS_OUT_OF_RESOURCES` for `nullptr` output instead of `AMDSMI_STATUS_INVAL` | `GpuUnit.GetCperEntries_NullOutput` |
+| `amdsmi_get_gpu_metrics_header_info` | Crashes on `nullptr` output pointer; should return `AMDSMI_STATUS_INVAL` | `GpuUnit.GetMetricsHeaderInfo_NullOutput` |
+| `amdsmi_topo_get_numa_node_number` | Crashes on `nullptr` output pointer; should return `AMDSMI_STATUS_INVAL` | `SystemUnit.TopoGetNumaNodeNumber_NullOutput` |
 | `amdsmi_get_processor_handle_from_bdf` | Returns `AMDSMI_STATUS_API_FAILED` for zero BDF; should return `NOT_FOUND` or `INVAL` | `SystemUnit.GetProcessorHandleFromBdf_ZeroBdf` |
 
 ## Re-enabling a test

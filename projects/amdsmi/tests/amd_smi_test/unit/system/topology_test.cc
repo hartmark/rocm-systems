@@ -158,9 +158,6 @@ TEST(SystemUnit, GetLinkMetrics_AllGpus) {
 
 // ---- amdsmi_topo_get_numa_node_number : invalid params first ----
 
-// amdsmi_topo_get_numa_node_number() dereferences a null output pointer instead of validating it
-// and crashes (segfault/abort) rather than returning a status. Skipped until the library validates
-// the argument; the proper return is AMDSMI_STATUS_INVAL.
 TEST(SystemUnit, TopoGetNumaNodeNumber_NullOutput) {
   GTEST_SKIP()
       << "amdsmi_topo_get_numa_node_number crashes on a null output pointer; proper return "

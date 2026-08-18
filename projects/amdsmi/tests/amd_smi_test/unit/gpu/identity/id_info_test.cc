@@ -447,9 +447,6 @@ TEST(GpuUnit, GetSubsystemName_AllGpus) {
 }
 
 // ---------------- amdsmi_get_gpu_xcd_counter ----------------
-// amdsmi_get_gpu_xcd_counter() dereferences a null output pointer instead of validating it and
-// crashes (segfault/abort) rather than returning a status. Skipped until the
-// library validates the argument; the proper return is AMDSMI_STATUS_INVAL.
 TEST(GpuUnit, GetXcdCounter_NullOutput) {
   GTEST_SKIP() << "amdsmi_get_gpu_xcd_counter crashes on a null output pointer; proper return "
                   "should be AMDSMI_STATUS_INVAL";

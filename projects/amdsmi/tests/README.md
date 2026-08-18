@@ -64,7 +64,7 @@ Log Files:
     Filename for Python func_test output, default=_py_func_test.log
 Output File:
   --output_dir OUTPUT_DIR
-    Path to output file, default=.
+    Path to output dir, default=build
 ```
 
 Command line examples:
@@ -140,18 +140,18 @@ Num APIs: 187
 ~~~shell
 # Example output (illustrative; exact counts depend on test run)
 APIs Supported: 129
-...
+        amdsmi_clean_gpu_local_data()
+        ...
 APIs Not Supported: 3
-	amdsmi_get_gpu_partition_metrics_info()
-	amdsmi_set_gpu_accelerator_partition_profile()
-	amdsmi_set_gpu_overdrive_level()
-API Supported: 129
-	amdsmi_clean_gpu_local_data()
-	amdsmi_cpu_apb_disable()
-	amdsmi_cpu_apb_enable()
-	amdsmi_get_clk_freq()
-	amdsmi_get_cpu_cclk_limit()
-	amdsmi_get_cpu_core_boostlimit()
-  ...
+        amdsmi_get_gpu_partition_metrics_info()
+        ...
+APIs   Missing: N
+        ...
+
+API Summary
+Not Supported:   3
+    Supported: 129
+      Missing:   N
+        Total: 187
 ~~~
 </details>
