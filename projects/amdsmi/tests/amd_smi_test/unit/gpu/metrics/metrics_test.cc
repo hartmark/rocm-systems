@@ -32,9 +32,6 @@ static constexpr amdsmi_reg_type_t kRegTypes[] = {AMDSMI_REG_XGMI, AMDSMI_REG_WA
                                                   AMDSMI_REG_USR, AMDSMI_REG_USR1};
 
 // ---------------- amdsmi_get_gpu_metrics_header_info ----------------
-// amdsmi_get_gpu_metrics_header_info() dereferences a null output pointer instead of validating it
-// and crashes (segfault/abort) rather than returning a status. Skipped until the library validates
-// the argument; the proper return is AMDSMI_STATUS_INVAL.
 TEST(GpuUnit, GetMetricsHeaderInfo_NullOutput) {
   GTEST_SKIP()
       << "amdsmi_get_gpu_metrics_header_info crashes on a null output pointer; proper return "

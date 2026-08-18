@@ -291,13 +291,10 @@ TEST(SystemUnit, GetLinkTopologyNearest_NullOutput) {
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-// amdsmi_get_link_topology_nearest() does not validate the processor handle and
-// returns AMDSMI_STATUS_SUCCESS for an invalid handle. Skipped until the library
-// rejects it; the proper return is AMDSMI_STATUS_INVAL.
 TEST(SystemUnit, GetLinkTopologyNearest_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
   GTEST_SKIP() << "amdsmi_get_link_topology_nearest returns SUCCESS for an "
                   "invalid handle; proper return should be AMDSMI_STATUS_INVAL";
+  amdsmi::unittest::UnitDevices dev;
   // Proper contract once fixed:
   //   amdsmi_topology_nearest_t info; memset(&info, 0, sizeof(info));
   //   amdsmi_status_t err = amdsmi_get_link_topology_nearest(

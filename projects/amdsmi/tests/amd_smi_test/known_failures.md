@@ -34,7 +34,7 @@ data-format issue.
 
 | API | Skipped test(s) |
 |-----|-----------------|
-| counter lifecycle flow | `GpuFunctionalReadWrite.Counter_LifecycleWorkflow` |
+| counter lifecycle flow | `GpuFunctionalReadOnly.Counter_LifecycleWorkflow` |
 
 ## AMDSMI_STATUS_INVAL (error 1)
 

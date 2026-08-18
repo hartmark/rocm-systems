@@ -38,6 +38,12 @@ source amdsmitst.exclude
 sudo ./amdsmitst --gtest_filter="-${BLACKLIST_ALL_ASICS}" -v 1 > _c_func_test.log 2> _c_func_test_err.log
 ```
 
+To run unit tests only (produces `_c_unit_test.log`):
+```
+cd /opt/rocm/share/amd_smi/tests
+./amdsmitst --gtest_filter="*Unit*" -v 1 > _c_unit_test.log 2> _c_unit_test_err.log
+```
+
 ## How to Run Summary Report
 ### Command Line Options
 
@@ -92,13 +98,13 @@ api_summary.py --amdsmi ./amdsmi.h --log_dir . --output_dir .
 
 <br> Output Files:
 ```
-  api_summary.csv
-  api_summary_table.txt
-  api_summary_support.txt
+  _api_summary.csv
+  _api_summary_table.txt
+  _api_summary_support.txt
 ```
 
 <details close>
-  <summary>Click for example: <i><b>api_summary.csv</i></b></summary>
+  <summary>Click for example: <i><b>_api_summary.csv</i></b></summary>
 
 ~~~shell
 API, Tested, c_unit_test, c_func_test, py_unit_test, py_func_test
@@ -117,7 +123,7 @@ amdsmi_get_node_handle, 0, 0, 0, 0, 0
 </details>
 
 <details close>
-  <summary>Click for example: <i><b>api_summary_table.txt</i></b></summary>
+  <summary>Click for example: <i><b>_api_summary_table.txt</i></b></summary>
 
 ~~~shell
  API    Test(%)     Unit(%)     Func(%)
@@ -129,10 +135,13 @@ Num APIs: 187
 </details>
 
 <details close>
-  <summary>Click for example: <i><b>api_summary_support.txt</i></b></summary>
+  <summary>Click for example: <i><b>_api_summary_support.txt</i></b></summary>
 
 ~~~shell
-API Not Supported: 3
+# Example output (illustrative; exact counts depend on test run)
+APIs Supported: 129
+...
+APIs Not Supported: 3
 	amdsmi_get_gpu_partition_metrics_info()
 	amdsmi_set_gpu_accelerator_partition_profile()
 	amdsmi_set_gpu_overdrive_level()
