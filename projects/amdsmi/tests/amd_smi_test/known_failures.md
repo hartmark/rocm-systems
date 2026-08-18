@@ -28,7 +28,8 @@ data-format issue.
 | `amdsmi_get_xgmi_info` | `SystemUnit.GetGpuXgmiLinkStatus_AllGpus` |
 | `amdsmi_get_link_metrics` | `SystemUnit.GetLinkMetrics_AllGpus` |
 | `amdsmi_get_afids_from_cper` | `GpuUnit.GetAfidsFromCper_DummyBuffer` |
-| `amdsmi_get_temp_metric` | `GpuFunctionalReadOnly.TestTempRead` |
+| `amdsmi_get_temp_metric` | `GpuFunctionalReadOnly.TempRead` |
+| `amdsmi_xgmi_*` (error injection) | `GpuFunctionalReadWrite.TestXGMIReadWrite` |
 
 ## AMDSMI_STATUS_UNEXPECTED_SIZE (error 42)
 

@@ -95,10 +95,7 @@ TEST(GpuFunctionalReadOnly, ReadCounter_NullValue) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-// amdsmi_gpu_control_counter() dereferences an invalid handle instead of
-// validating it and crashes (segfault). Skipped until the library validates the
-// argument; the proper return is AMDSMI_STATUS_INVAL. Exercised with a real
-// handle in the lifecycle workflow below.
+// Valid-handle path is exercised in Counter_LifecycleWorkflow below.
 TEST(GpuFunctionalReadOnly, ControlCounter_InvalidHandle) {
   GTEST_SKIP() << "amdsmi_gpu_control_counter crashes on an invalid handle; "
                   "proper return should be AMDSMI_STATUS_INVAL";
