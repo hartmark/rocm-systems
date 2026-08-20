@@ -48,17 +48,15 @@ static constexpr amdsmi_voltage_metric_t kVoltMetrics[] = {
     AMDSMI_VOLT_MAX_CRIT, AMDSMI_VOLT_AVERAGE, AMDSMI_VOLT_LOWEST,   AMDSMI_VOLT_HIGHEST};
 
 // ---------------- amdsmi_get_gpu_fan_rpms ----------------
-TEST(GpuUnit, GetFanRpms_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetFanRpms_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_rpms", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_fan_rpms(dev.gpus()[0], 0, nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_fan_rpms(gpus()[0], 0, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(GpuUnit, GetFanRpms_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetFanRpms_InvalidHandle) {
   int64_t speed = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_rpms", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_gpu_fan_rpms(kInvalidHandle, 0, &speed);
@@ -66,14 +64,13 @@ TEST(GpuUnit, GetFanRpms_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetFanRpms_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetFanRpms_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_fan_rpms");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     int64_t speed = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_rpms", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_gpu_fan_rpms(dev.gpus()[i], 0, &speed);
+    amdsmi_status_t err = amdsmi_get_gpu_fan_rpms(gpus()[i], 0, &speed);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -85,17 +82,15 @@ TEST(GpuUnit, GetFanRpms_AllGpus) {
 }
 
 // ---------------- amdsmi_get_gpu_fan_speed ----------------
-TEST(GpuUnit, GetFanSpeed_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetFanSpeed_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_speed", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_fan_speed(dev.gpus()[0], 0, nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_fan_speed(gpus()[0], 0, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(GpuUnit, GetFanSpeed_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetFanSpeed_InvalidHandle) {
   int64_t speed = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_speed", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_gpu_fan_speed(kInvalidHandle, 0, &speed);
@@ -103,14 +98,13 @@ TEST(GpuUnit, GetFanSpeed_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetFanSpeed_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetFanSpeed_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_fan_speed");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     int64_t speed = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_speed", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_gpu_fan_speed(dev.gpus()[i], 0, &speed);
+    amdsmi_status_t err = amdsmi_get_gpu_fan_speed(gpus()[i], 0, &speed);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -122,17 +116,15 @@ TEST(GpuUnit, GetFanSpeed_AllGpus) {
 }
 
 // ---------------- amdsmi_get_gpu_fan_speed_max ----------------
-TEST(GpuUnit, GetFanSpeedMax_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetFanSpeedMax_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_speed_max", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_fan_speed_max(dev.gpus()[0], 0, nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_fan_speed_max(gpus()[0], 0, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(GpuUnit, GetFanSpeedMax_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetFanSpeedMax_InvalidHandle) {
   uint64_t max_speed = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_speed_max", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_gpu_fan_speed_max(kInvalidHandle, 0, &max_speed);
@@ -140,14 +132,13 @@ TEST(GpuUnit, GetFanSpeedMax_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetFanSpeedMax_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetFanSpeedMax_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_fan_speed_max");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     uint64_t max_speed = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_fan_speed_max", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_gpu_fan_speed_max(dev.gpus()[i], 0, &max_speed);
+    amdsmi_status_t err = amdsmi_get_gpu_fan_speed_max(gpus()[i], 0, &max_speed);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -159,17 +150,15 @@ TEST(GpuUnit, GetFanSpeedMax_AllGpus) {
 }
 
 // ---------------- amdsmi_get_temp_metric (two enums) ----------------
-TEST(GpuUnit, GetTempMetric_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetTempMetric_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_temp_metric", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_temp_metric(dev.gpus()[0], AMDSMI_TEMPERATURE_TYPE_EDGE,
-                                               AMDSMI_TEMP_CURRENT, nullptr);
+  amdsmi_status_t err =
+      amdsmi_get_temp_metric(gpus()[0], AMDSMI_TEMPERATURE_TYPE_EDGE, AMDSMI_TEMP_CURRENT, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetTempMetric_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetTempMetric_InvalidHandle) {
   int64_t temp = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_temp_metric", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_temp_metric(kInvalidHandle, AMDSMI_TEMPERATURE_TYPE_EDGE,
@@ -178,14 +167,13 @@ TEST(GpuUnit, GetTempMetric_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetTempMetric_AllGpusAllTypesMetrics) {
+TEST_F(GpuUnit, GetTempMetric_AllGpusAllTypesMetrics) {
   GTEST_SKIP()
       << "GetTempMetric_AllGpusAllTypesMetrics fails with error 43, AMDSMI_STATUS_UNEXPECTED_DATA";
 
-  amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_temp_metric");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto tt : kTempTypes)
       for (auto tm : kTempMetrics) {
         int64_t temp = 0;
@@ -193,7 +181,7 @@ TEST(GpuUnit, GetTempMetric_AllGpusAllTypesMetrics) {
                            "gpu=" + std::to_string(i) + " type=" + std::to_string(tt) +
                                " metric=" + std::to_string(tm),
                            kVerbose);
-        amdsmi_status_t err = amdsmi_get_temp_metric(dev.gpus()[i], tt, tm, &temp);
+        amdsmi_status_t err = amdsmi_get_temp_metric(gpus()[i], tt, tm, &temp);
         DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                               AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
         amdsmi_col.Record("gpu=" + std::to_string(i) + " type=" + std::to_string(tt) +
@@ -207,17 +195,15 @@ TEST(GpuUnit, GetTempMetric_AllGpusAllTypesMetrics) {
 }
 
 // ---------------- amdsmi_get_gpu_volt_metric (two enums) ----------------
-TEST(GpuUnit, GetVoltMetric_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetVoltMetric_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_volt_metric", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_volt_metric(dev.gpus()[0], AMDSMI_VOLT_TYPE_VDDGFX,
-                                                   AMDSMI_VOLT_CURRENT, nullptr);
+  amdsmi_status_t err =
+      amdsmi_get_gpu_volt_metric(gpus()[0], AMDSMI_VOLT_TYPE_VDDGFX, AMDSMI_VOLT_CURRENT, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetVoltMetric_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetVoltMetric_InvalidHandle) {
   int64_t voltage = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_volt_metric", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_gpu_volt_metric(kInvalidHandle, AMDSMI_VOLT_TYPE_VDDGFX,
@@ -226,11 +212,10 @@ TEST(GpuUnit, GetVoltMetric_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetVoltMetric_AllGpusAllTypesMetrics) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetVoltMetric_AllGpusAllTypesMetrics) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_volt_metric");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto vt : kVoltTypes)
       for (auto vm : kVoltMetrics) {
         int64_t voltage = 0;
@@ -238,7 +223,7 @@ TEST(GpuUnit, GetVoltMetric_AllGpusAllTypesMetrics) {
                            "gpu=" + std::to_string(i) + " type=" + std::to_string(vt) +
                                " metric=" + std::to_string(vm),
                            kVerbose);
-        amdsmi_status_t err = amdsmi_get_gpu_volt_metric(dev.gpus()[i], vt, vm, &voltage);
+        amdsmi_status_t err = amdsmi_get_gpu_volt_metric(gpus()[i], vt, vm, &voltage);
         DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                               AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
         amdsmi_col.Record("gpu=" + std::to_string(i) + " type=" + std::to_string(vt) +
@@ -252,23 +237,21 @@ TEST(GpuUnit, GetVoltMetric_AllGpusAllTypesMetrics) {
 }
 
 // ---------------- amdsmi_set_gpu_fan_speed (SET) ----------------
-TEST(GpuUnit, SetFanSpeed_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetFanSpeed_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_fan_speed", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_gpu_fan_speed(kInvalidHandle, 0, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, SetFanSpeed_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetFanSpeed_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_gpu_fan_speed");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     int64_t cur = 0;
-    if (amdsmi_get_gpu_fan_speed(dev.gpus()[i], 0, &cur) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_gpu_fan_speed(gpus()[i], 0, &cur) != AMDSMI_STATUS_SUCCESS) continue;
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_fan_speed", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_set_gpu_fan_speed(dev.gpus()[i], 0, static_cast<uint64_t>(cur));
+    amdsmi_status_t err = amdsmi_set_gpu_fan_speed(gpus()[i], 0, static_cast<uint64_t>(cur));
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -276,27 +259,25 @@ TEST(GpuUnit, SetFanSpeed_AllGpus) {
                       ::amdsmi::unittest::AmdsmiStatusIsExpected(
                           err, AMDSMI_STATUS_SUCCESS, AMDSMI_STATUS_NOT_SUPPORTED,
                           AMDSMI_STATUS_NOT_YET_IMPLEMENTED, AMDSMI_STATUS_NO_PERM));
-    amdsmi_reset_gpu_fan(dev.gpus()[i], 0);
+    amdsmi_reset_gpu_fan(gpus()[i], 0);
   }
   amdsmi_col.ExpectNoFailures();
 }
 
 // ---------------- amdsmi_reset_gpu_fan (action) ----------------
-TEST(GpuUnit, ResetFan_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, ResetFan_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_reset_gpu_fan", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_reset_gpu_fan(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, ResetFan_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, ResetFan_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_reset_gpu_fan");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_reset_gpu_fan", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_reset_gpu_fan(dev.gpus()[i], 0);
+    amdsmi_status_t err = amdsmi_reset_gpu_fan(gpus()[i], 0);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);

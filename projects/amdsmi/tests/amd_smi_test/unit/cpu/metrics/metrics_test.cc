@@ -34,8 +34,7 @@ using amdsmi::unittest::kVerbose;
 // invalid-handle test.
 
 // ---- amdsmi_get_hsmp_metrics_table_version (handle guarded only) ----
-TEST(CpuUnit, GetHsmpMetricsTableVersion_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetHsmpMetricsTableVersion_InvalidHandle) {
   uint32_t version = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_hsmp_metrics_table_version", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_hsmp_metrics_table_version(kInvalidHandle, &version);
@@ -43,15 +42,14 @@ TEST(CpuUnit, GetHsmpMetricsTableVersion_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetHsmpMetricsTableVersion_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetHsmpMetricsTableVersion_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_hsmp_metrics_table_version");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint32_t version = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_hsmp_metrics_table_version", "cpu=" + std::to_string(i),
                        kVerbose);
-    amdsmi_status_t err = amdsmi_get_hsmp_metrics_table_version(dev.cpus()[i], &version);
+    amdsmi_status_t err = amdsmi_get_hsmp_metrics_table_version(cpus()[i], &version);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -63,8 +61,7 @@ TEST(CpuUnit, GetHsmpMetricsTableVersion_AllCpus) {
 }
 
 // ---- amdsmi_get_hsmp_metrics_table (handle guarded only) ----
-TEST(CpuUnit, GetHsmpMetricsTable_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetHsmpMetricsTable_InvalidHandle) {
   amdsmi_hsmp_metrics_table_t table;
   memset(&table, 0, sizeof(table));
   DISPLAY_AMDSMI_API("amdsmi_get_hsmp_metrics_table", "handle=invalid", kVerbose);
@@ -73,15 +70,14 @@ TEST(CpuUnit, GetHsmpMetricsTable_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetHsmpMetricsTable_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetHsmpMetricsTable_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_hsmp_metrics_table");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     amdsmi_hsmp_metrics_table_t table;
     memset(&table, 0, sizeof(table));
     DISPLAY_AMDSMI_API("amdsmi_get_hsmp_metrics_table", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_hsmp_metrics_table(dev.cpus()[i], &table);
+    amdsmi_status_t err = amdsmi_get_hsmp_metrics_table(cpus()[i], &table);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,

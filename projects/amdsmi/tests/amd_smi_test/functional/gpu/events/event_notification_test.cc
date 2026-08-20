@@ -43,8 +43,8 @@ static uint64_t AllEventsMask() {
 }
 
 // ---------------- invalid parameters first (not gated) ----------------
-TEST(GpuFunctionalReadWrite, InitEventNotification_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, InitEventNotification_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_init_gpu_event_notification", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_init_gpu_event_notification(kInvalidHandle);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -52,8 +52,8 @@ TEST(GpuFunctionalReadWrite, InitEventNotification_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, SetEventMask_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetEventMask_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_event_notification_mask", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_gpu_event_notification_mask(kInvalidHandle, AllEventsMask());
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -61,8 +61,8 @@ TEST(GpuFunctionalReadWrite, SetEventMask_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, GetEventNotification_NullCount) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, GetEventNotification_NullCount) {
+  RequireInit();
   amdsmi_evt_notification_data_t data[4];
   memset(data, 0, sizeof(data));
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_event_notification", "num_elem=nullptr", kVerbose);
@@ -71,8 +71,8 @@ TEST(GpuFunctionalReadWrite, GetEventNotification_NullCount) {
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
 
-TEST(GpuFunctionalReadWrite, StopEventNotification_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, StopEventNotification_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_stop_gpu_event_notification", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_stop_gpu_event_notification(kInvalidHandle);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -83,18 +83,17 @@ TEST(GpuFunctionalReadWrite, StopEventNotification_InvalidHandle) {
 // ---------------- full init -> set-mask -> collect -> stop workflow ----------------
 // init/set/stop allocate and mutate per-device event-notification state, so the
 // flow is gated with the shared mutation gate.
-TEST(GpuFunctionalReadWrite, EventNotification_Workflow) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadWrite, EventNotification_Workflow) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
 
   amdsmi::unittest::StatusCollector col("amdsmi_gpu_event_notification");
   const uint64_t mask = AllEventsMask();
   std::vector<size_t> inited;
 
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_init_gpu_event_notification", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_init_gpu_event_notification(dev.gpus()[i]);
+    amdsmi_status_t err = amdsmi_init_gpu_event_notification(gpus()[i]);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     col.Record("init gpu=" + std::to_string(i), err,
@@ -106,7 +105,7 @@ TEST(GpuFunctionalReadWrite, EventNotification_Workflow) {
 
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_event_notification_mask",
                        "gpu=" + std::to_string(i) + " mask=all", kVerbose);
-    amdsmi_status_t serr = amdsmi_set_gpu_event_notification_mask(dev.gpus()[i], mask);
+    amdsmi_status_t serr = amdsmi_set_gpu_event_notification_mask(gpus()[i], mask);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, serr, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     col.Record("set_mask gpu=" + std::to_string(i), serr,
@@ -144,7 +143,7 @@ TEST(GpuFunctionalReadWrite, EventNotification_Workflow) {
   // Restore each device's event state by releasing the notification resources.
   for (size_t i : inited) {
     DISPLAY_AMDSMI_API("amdsmi_stop_gpu_event_notification", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_stop_gpu_event_notification(dev.gpus()[i]);
+    amdsmi_status_t err = amdsmi_stop_gpu_event_notification(gpus()[i]);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     col.Record("stop gpu=" + std::to_string(i), err,

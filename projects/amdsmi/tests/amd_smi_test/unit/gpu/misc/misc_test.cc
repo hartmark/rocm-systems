@@ -29,16 +29,14 @@ using amdsmi::unittest::kInvalidHandle;
 using amdsmi::unittest::kVerbose;
 
 // ---------------- amdsmi_get_npm_info (node handle) ----------------
-TEST(GpuUnit, GetNpmInfo_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetNpmInfo_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_npm_info", "node=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_npm_info(dev.gpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_npm_info(gpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetNpmInfo_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetNpmInfo_InvalidHandle) {
   amdsmi_npm_info_t info;
   memset(&info, 0, sizeof(info));
   DISPLAY_AMDSMI_API("amdsmi_get_npm_info", "handle=invalid", kVerbose);
@@ -47,15 +45,14 @@ TEST(GpuUnit, GetNpmInfo_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetNpmInfo_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetNpmInfo_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_npm_info");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_npm_info_t info;
     memset(&info, 0, sizeof(info));
     DISPLAY_AMDSMI_API("amdsmi_get_npm_info", "node=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_npm_info(dev.gpus()[i], &info);
+    amdsmi_status_t err = amdsmi_get_npm_info(gpus()[i], &info);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("node=" + std::to_string(i), err,

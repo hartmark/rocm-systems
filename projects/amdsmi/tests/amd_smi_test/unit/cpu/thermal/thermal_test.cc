@@ -34,8 +34,7 @@ using amdsmi::unittest::kVerbose;
 // controller temperature guard their outputs and get a null-output test.
 
 // ---- amdsmi_get_cpu_socket_temperature (handle guarded only) ----
-TEST(CpuUnit, GetSocketTemperature_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSocketTemperature_InvalidHandle) {
   uint32_t tmon = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_socket_temperature", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_socket_temperature(kInvalidHandle, &tmon);
@@ -43,14 +42,13 @@ TEST(CpuUnit, GetSocketTemperature_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetSocketTemperature_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSocketTemperature_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_socket_temperature");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint32_t tmon = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_socket_temperature", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_socket_temperature(dev.cpus()[i], &tmon);
+    amdsmi_status_t err = amdsmi_get_cpu_socket_temperature(cpus()[i], &tmon);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -62,16 +60,14 @@ TEST(CpuUnit, GetSocketTemperature_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_tdelta (output guarded) ----
-TEST(CpuUnit, GetTdelta_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetTdelta_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_tdelta", "out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_tdelta(dev.cpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_tdelta(cpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetTdelta_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetTdelta_InvalidHandle) {
   uint8_t tdelta = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_tdelta", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_tdelta(kInvalidHandle, &tdelta);
@@ -79,14 +75,13 @@ TEST(CpuUnit, GetTdelta_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetTdelta_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetTdelta_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_tdelta");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint8_t tdelta = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_tdelta", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_tdelta(dev.cpus()[i], &tdelta);
+    amdsmi_status_t err = amdsmi_get_cpu_tdelta(cpus()[i], &tdelta);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -98,18 +93,16 @@ TEST(CpuUnit, GetTdelta_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_svi3_vr_controller_temp (outputs guarded) ----
-TEST(CpuUnit, GetSvi3VrControllerTemp_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetSvi3VrControllerTemp_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   uint32_t rail_index = 0, temp = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_svi3_vr_controller_temp", "rail_selection=nullptr", kVerbose);
   amdsmi_status_t err =
-      amdsmi_get_cpu_svi3_vr_controller_temp(dev.cpus()[0], nullptr, &rail_index, &temp);
+      amdsmi_get_cpu_svi3_vr_controller_temp(cpus()[0], nullptr, &rail_index, &temp);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetSvi3VrControllerTemp_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSvi3VrControllerTemp_InvalidHandle) {
   uint32_t rail_selection = 0, rail_index = 0, temp = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_svi3_vr_controller_temp", "handle=invalid", kVerbose);
   amdsmi_status_t err =
@@ -118,16 +111,15 @@ TEST(CpuUnit, GetSvi3VrControllerTemp_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetSvi3VrControllerTemp_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSvi3VrControllerTemp_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_svi3_vr_controller_temp");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint32_t rail_selection = 0, rail_index = 0, temp = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_svi3_vr_controller_temp", "cpu=" + std::to_string(i),
                        kVerbose);
     amdsmi_status_t err =
-        amdsmi_get_cpu_svi3_vr_controller_temp(dev.cpus()[i], &rail_selection, &rail_index, &temp);
+        amdsmi_get_cpu_svi3_vr_controller_temp(cpus()[i], &rail_selection, &rail_index, &temp);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,

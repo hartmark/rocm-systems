@@ -40,8 +40,7 @@ constexpr uint8_t kDimmAddrs[] = {0, 1, 2, 3};
 }  // namespace
 
 // ---- amdsmi_get_cpu_ddr_bw (handle guarded only) ----
-TEST(CpuUnit, GetDdrBw_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDdrBw_InvalidHandle) {
   amdsmi_ddr_bw_metrics_t bw;
   memset(&bw, 0, sizeof(bw));
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_ddr_bw", "handle=invalid", kVerbose);
@@ -50,15 +49,14 @@ TEST(CpuUnit, GetDdrBw_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetDdrBw_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDdrBw_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_ddr_bw");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     amdsmi_ddr_bw_metrics_t bw;
     memset(&bw, 0, sizeof(bw));
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_ddr_bw", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_ddr_bw(dev.cpus()[i], &bw);
+    amdsmi_status_t err = amdsmi_get_cpu_ddr_bw(cpus()[i], &bw);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -70,8 +68,7 @@ TEST(CpuUnit, GetDdrBw_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_dimm_temp_range_and_refresh_rate (handle guarded only) ----
-TEST(CpuUnit, GetDimmTempRangeRefreshRate_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDimmTempRangeRefreshRate_InvalidHandle) {
   amdsmi_temp_range_refresh_rate_t rate;
   memset(&rate, 0, sizeof(rate));
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_dimm_temp_range_and_refresh_rate", "handle=invalid", kVerbose);
@@ -80,18 +77,16 @@ TEST(CpuUnit, GetDimmTempRangeRefreshRate_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetDimmTempRangeRefreshRate_AllCpusAllDimms) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDimmTempRangeRefreshRate_AllCpusAllDimms) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_dimm_temp_range_and_refresh_rate");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i)
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i)
     for (auto addr : kDimmAddrs) {
       amdsmi_temp_range_refresh_rate_t rate;
       memset(&rate, 0, sizeof(rate));
       DISPLAY_AMDSMI_API("amdsmi_get_cpu_dimm_temp_range_and_refresh_rate",
                          "cpu=" + std::to_string(i) + " dimm=" + std::to_string(addr), kVerbose);
-      amdsmi_status_t err =
-          amdsmi_get_cpu_dimm_temp_range_and_refresh_rate(dev.cpus()[i], addr, &rate);
+      amdsmi_status_t err = amdsmi_get_cpu_dimm_temp_range_and_refresh_rate(cpus()[i], addr, &rate);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("cpu=" + std::to_string(i) + " dimm=" + std::to_string(addr), err,
@@ -103,8 +98,7 @@ TEST(CpuUnit, GetDimmTempRangeRefreshRate_AllCpusAllDimms) {
 }
 
 // ---- amdsmi_get_cpu_dimm_power_consumption (handle guarded only) ----
-TEST(CpuUnit, GetDimmPowerConsumption_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDimmPowerConsumption_InvalidHandle) {
   amdsmi_dimm_power_t pow;
   memset(&pow, 0, sizeof(pow));
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_dimm_power_consumption", "handle=invalid", kVerbose);
@@ -113,17 +107,16 @@ TEST(CpuUnit, GetDimmPowerConsumption_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetDimmPowerConsumption_AllCpusAllDimms) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDimmPowerConsumption_AllCpusAllDimms) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_dimm_power_consumption");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i)
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i)
     for (auto addr : kDimmAddrs) {
       amdsmi_dimm_power_t pow;
       memset(&pow, 0, sizeof(pow));
       DISPLAY_AMDSMI_API("amdsmi_get_cpu_dimm_power_consumption",
                          "cpu=" + std::to_string(i) + " dimm=" + std::to_string(addr), kVerbose);
-      amdsmi_status_t err = amdsmi_get_cpu_dimm_power_consumption(dev.cpus()[i], addr, &pow);
+      amdsmi_status_t err = amdsmi_get_cpu_dimm_power_consumption(cpus()[i], addr, &pow);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("cpu=" + std::to_string(i) + " dimm=" + std::to_string(addr), err,
@@ -135,8 +128,7 @@ TEST(CpuUnit, GetDimmPowerConsumption_AllCpusAllDimms) {
 }
 
 // ---- amdsmi_get_cpu_dimm_thermal_sensor (handle guarded only) ----
-TEST(CpuUnit, GetDimmThermalSensor_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDimmThermalSensor_InvalidHandle) {
   amdsmi_dimm_thermal_t temp;
   memset(&temp, 0, sizeof(temp));
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_dimm_thermal_sensor", "handle=invalid", kVerbose);
@@ -145,17 +137,16 @@ TEST(CpuUnit, GetDimmThermalSensor_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetDimmThermalSensor_AllCpusAllDimms) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDimmThermalSensor_AllCpusAllDimms) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_dimm_thermal_sensor");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i)
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i)
     for (auto addr : kDimmAddrs) {
       amdsmi_dimm_thermal_t temp;
       memset(&temp, 0, sizeof(temp));
       DISPLAY_AMDSMI_API("amdsmi_get_cpu_dimm_thermal_sensor",
                          "cpu=" + std::to_string(i) + " dimm=" + std::to_string(addr), kVerbose);
-      amdsmi_status_t err = amdsmi_get_cpu_dimm_thermal_sensor(dev.cpus()[i], addr, &temp);
+      amdsmi_status_t err = amdsmi_get_cpu_dimm_thermal_sensor(cpus()[i], addr, &temp);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("cpu=" + std::to_string(i) + " dimm=" + std::to_string(addr), err,
@@ -167,16 +158,14 @@ TEST(CpuUnit, GetDimmThermalSensor_AllCpusAllDimms) {
 }
 
 // ---- amdsmi_get_cpu_dimm_sb_reg (data output guarded) ----
-TEST(CpuUnit, GetDimmSbReg_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetDimmSbReg_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_dimm_sb_reg", "data=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_dimm_sb_reg(dev.cpus()[0], 0, 0, 0, 0, nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_dimm_sb_reg(cpus()[0], 0, 0, 0, 0, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetDimmSbReg_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDimmSbReg_InvalidHandle) {
   uint32_t data = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_dimm_sb_reg", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_dimm_sb_reg(kInvalidHandle, 0, 0, 0, 0, &data);
@@ -184,14 +173,13 @@ TEST(CpuUnit, GetDimmSbReg_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetDimmSbReg_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDimmSbReg_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_dimm_sb_reg");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint32_t data = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_dimm_sb_reg", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_dimm_sb_reg(dev.cpus()[i], 0, 0, 0, 0, &data);
+    amdsmi_status_t err = amdsmi_get_cpu_dimm_sb_reg(cpus()[i], 0, 0, 0, 0, &data);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -203,8 +191,7 @@ TEST(CpuUnit, GetDimmSbReg_AllCpus) {
 }
 
 // ---- amdsmi_set_cpu_dimm_sb_reg (invalid-handle only; live write is unsafe) ----
-TEST(CpuUnit, SetDimmSbReg_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetDimmSbReg_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_dimm_sb_reg", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_dimm_sb_reg(kInvalidHandle, 0, 0, 0, 0, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,

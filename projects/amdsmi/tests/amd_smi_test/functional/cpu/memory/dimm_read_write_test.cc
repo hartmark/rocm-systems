@@ -30,8 +30,8 @@ using amdsmi::unittest::kInvalidHandle;
 using amdsmi::unittest::kVerbose;
 
 // amdsmi_set_cpu_dimm_sb_reg (setter only, no getter).
-TEST(CpuFunctionalReadWrite, SetDimmSbReg_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuFunctionalReadWrite, SetDimmSbReg_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_dimm_sb_reg", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_dimm_sb_reg(kInvalidHandle, 0, 0, 0, 0, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -39,14 +39,13 @@ TEST(CpuFunctionalReadWrite, SetDimmSbReg_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(CpuFunctionalReadWrite, DimmSbReg_Set) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuFunctionalReadWrite, DimmSbReg_Set) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_cpu_dimm_sb_reg");
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  for (size_t i = 0; i < cpus().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_set_cpu_dimm_sb_reg", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_set_cpu_dimm_sb_reg(dev.cpus()[i], 0, 0, 0, 0, 0);
+    amdsmi_status_t err = amdsmi_set_cpu_dimm_sb_reg(cpus()[i], 0, 0, 0, 0, 0);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NO_PERM,
                           AMDSMI_STATUS_NO_HSMP_MSG_SUP, AMDSMI_STATUS_INVAL);

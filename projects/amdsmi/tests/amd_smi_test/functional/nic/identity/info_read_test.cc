@@ -30,8 +30,8 @@ using amdsmi::unittest::kVerbose;
 
 // NIC exposes only getters. These tests verify each getter returns an
 // acceptable status and is stable (same status) across repeated reads.
-TEST(NicFunctionalReadOnly, DeviceBdf_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(NicFunctionalReadOnly, DeviceBdf_InvalidHandle) {
+  RequireInit();
   amdsmi_bdf_t bdf;
   memset(&bdf, 0, sizeof(bdf));
   DISPLAY_AMDSMI_API("amdsmi_get_nic_device_bdf", "handle=invalid", kVerbose);
@@ -41,27 +41,25 @@ TEST(NicFunctionalReadOnly, DeviceBdf_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(NicFunctionalReadOnly, AsicInfo_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.nics().empty()) GTEST_SKIP() << "No NIC devices";
+TEST_F(NicFunctionalReadOnly, AsicInfo_NullOutput) {
+  if (nics().empty()) GTEST_SKIP() << "No NIC devices";
   DISPLAY_AMDSMI_API("amdsmi_get_nic_asic_info", "nic=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_nic_asic_info(dev.nics()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_nic_asic_info(nics()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
 
 // Getter stability: BDF must be identical across two reads.
-TEST(NicFunctionalReadOnly, DeviceBdf_Stable) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.nics().empty()) GTEST_SKIP() << "No NIC devices";
+TEST_F(NicFunctionalReadOnly, DeviceBdf_Stable) {
+  if (nics().empty()) GTEST_SKIP() << "No NIC devices";
   amdsmi::unittest::StatusCollector col("amdsmi_get_nic_device_bdf");
-  for (size_t i = 0; i < dev.nics().size(); ++i) {
+  for (size_t i = 0; i < nics().size(); ++i) {
     amdsmi_bdf_t a, b;
     memset(&a, 0, sizeof(a));
     memset(&b, 0, sizeof(b));
     DISPLAY_AMDSMI_API("amdsmi_get_nic_device_bdf", "nic=" + std::to_string(i), kVerbose);
-    amdsmi_status_t e1 = amdsmi_get_nic_device_bdf(dev.nics()[i], &a);
-    amdsmi_status_t e2 = amdsmi_get_nic_device_bdf(dev.nics()[i], &b);
+    amdsmi_status_t e1 = amdsmi_get_nic_device_bdf(nics()[i], &a);
+    amdsmi_status_t e2 = amdsmi_get_nic_device_bdf(nics()[i], &b);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, e1, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     col.Record("nic=" + std::to_string(i), e1,

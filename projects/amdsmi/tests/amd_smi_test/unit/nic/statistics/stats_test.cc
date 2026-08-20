@@ -39,17 +39,15 @@ constexpr uint32_t kStatPortIndices[] = {0, 1};
 //                                amdsmi_nic_stat_t* stats)
 // =====================================================================
 
-TEST(NicUnit, GetNicPortStatistics_NullCount) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.nics().empty()) GTEST_SKIP() << "No NIC devices";
+TEST_F(NicUnit, GetNicPortStatistics_NullCount) {
+  if (nics().empty()) GTEST_SKIP() << "No NIC devices";
   DISPLAY_AMDSMI_API("amdsmi_get_nic_port_statistics", "nic=0 port=0 num_stats=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_nic_port_statistics(dev.nics()[0], 0, nullptr, nullptr);
+  amdsmi_status_t err = amdsmi_get_nic_port_statistics(nics()[0], 0, nullptr, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
 
-TEST(NicUnit, GetNicPortStatistics_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(NicUnit, GetNicPortStatistics_InvalidHandle) {
   uint32_t num_stats = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_nic_port_statistics", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_nic_port_statistics(kInvalidHandle, 0, &num_stats, nullptr);
@@ -58,18 +56,16 @@ TEST(NicUnit, GetNicPortStatistics_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(NicUnit, GetNicPortStatistics_AllNics) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(NicUnit, GetNicPortStatistics_AllNics) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_nic_port_statistics");
-  if (dev.nics().empty()) GTEST_SKIP() << "No NIC devices";
-  for (size_t i = 0; i < dev.nics().size(); ++i) {
+  if (nics().empty()) GTEST_SKIP() << "No NIC devices";
+  for (size_t i = 0; i < nics().size(); ++i) {
     for (uint32_t port : kStatPortIndices) {
       uint32_t num_stats = 0;
       DISPLAY_AMDSMI_API(
           "amdsmi_get_nic_port_statistics",
           "nic=" + std::to_string(i) + " port=" + std::to_string(port) + " count-query", kVerbose);
-      amdsmi_status_t err =
-          amdsmi_get_nic_port_statistics(dev.nics()[i], port, &num_stats, nullptr);
+      amdsmi_status_t err = amdsmi_get_nic_port_statistics(nics()[i], port, &num_stats, nullptr);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record(
@@ -83,7 +79,7 @@ TEST(NicUnit, GetNicPortStatistics_AllNics) {
       DISPLAY_AMDSMI_API("amdsmi_get_nic_port_statistics",
                          "nic=" + std::to_string(i) + " port=" + std::to_string(port) + " fill",
                          kVerbose);
-      err = amdsmi_get_nic_port_statistics(dev.nics()[i], port, &num_stats, stats.data());
+      err = amdsmi_get_nic_port_statistics(nics()[i], port, &num_stats, stats.data());
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("nic=" + std::to_string(i) + " port=" + std::to_string(port) + " fill", err,
@@ -101,18 +97,16 @@ TEST(NicUnit, GetNicPortStatistics_AllNics) {
 //                                     amdsmi_nic_stat_t* stats)
 // =====================================================================
 
-TEST(NicUnit, GetNicRdmaPortStatistics_NullCount) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.nics().empty()) GTEST_SKIP() << "No NIC devices";
+TEST_F(NicUnit, GetNicRdmaPortStatistics_NullCount) {
+  if (nics().empty()) GTEST_SKIP() << "No NIC devices";
   DISPLAY_AMDSMI_API("amdsmi_get_nic_rdma_port_statistics", "nic=0 port=0 num_stats=nullptr",
                      kVerbose);
-  amdsmi_status_t err = amdsmi_get_nic_rdma_port_statistics(dev.nics()[0], 0, nullptr, nullptr);
+  amdsmi_status_t err = amdsmi_get_nic_rdma_port_statistics(nics()[0], 0, nullptr, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
 
-TEST(NicUnit, GetNicRdmaPortStatistics_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(NicUnit, GetNicRdmaPortStatistics_InvalidHandle) {
   uint32_t num_stats = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_nic_rdma_port_statistics", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_nic_rdma_port_statistics(kInvalidHandle, 0, &num_stats, nullptr);
@@ -121,11 +115,10 @@ TEST(NicUnit, GetNicRdmaPortStatistics_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(NicUnit, GetNicRdmaPortStatistics_AllNics) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(NicUnit, GetNicRdmaPortStatistics_AllNics) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_nic_rdma_port_statistics");
-  if (dev.nics().empty()) GTEST_SKIP() << "No NIC devices";
-  for (size_t i = 0; i < dev.nics().size(); ++i) {
+  if (nics().empty()) GTEST_SKIP() << "No NIC devices";
+  for (size_t i = 0; i < nics().size(); ++i) {
     for (uint32_t port : kStatPortIndices) {
       uint32_t num_stats = 0;
       DISPLAY_AMDSMI_API(
@@ -133,7 +126,7 @@ TEST(NicUnit, GetNicRdmaPortStatistics_AllNics) {
           "nic=" + std::to_string(i) + " rdma_port=" + std::to_string(port) + " count-query",
           kVerbose);
       amdsmi_status_t err =
-          amdsmi_get_nic_rdma_port_statistics(dev.nics()[i], port, &num_stats, nullptr);
+          amdsmi_get_nic_rdma_port_statistics(nics()[i], port, &num_stats, nullptr);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record(
@@ -147,7 +140,7 @@ TEST(NicUnit, GetNicRdmaPortStatistics_AllNics) {
       DISPLAY_AMDSMI_API(
           "amdsmi_get_nic_rdma_port_statistics",
           "nic=" + std::to_string(i) + " rdma_port=" + std::to_string(port) + " fill", kVerbose);
-      err = amdsmi_get_nic_rdma_port_statistics(dev.nics()[i], port, &num_stats, stats.data());
+      err = amdsmi_get_nic_rdma_port_statistics(nics()[i], port, &num_stats, stats.data());
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("nic=" + std::to_string(i) + " rdma_port=" + std::to_string(port) + " fill",
@@ -165,18 +158,16 @@ TEST(NicUnit, GetNicRdmaPortStatistics_AllNics) {
 //                                  amdsmi_nic_stat_t* stats)
 // =====================================================================
 
-TEST(NicUnit, GetNicVendorStatistics_NullCount) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.nics().empty()) GTEST_SKIP() << "No NIC devices";
+TEST_F(NicUnit, GetNicVendorStatistics_NullCount) {
+  if (nics().empty()) GTEST_SKIP() << "No NIC devices";
   DISPLAY_AMDSMI_API("amdsmi_get_nic_vendor_statistics", "nic=0 port=0 num_stats=nullptr",
                      kVerbose);
-  amdsmi_status_t err = amdsmi_get_nic_vendor_statistics(dev.nics()[0], 0, nullptr, nullptr);
+  amdsmi_status_t err = amdsmi_get_nic_vendor_statistics(nics()[0], 0, nullptr, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
 
-TEST(NicUnit, GetNicVendorStatistics_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(NicUnit, GetNicVendorStatistics_InvalidHandle) {
   uint32_t num_stats = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_nic_vendor_statistics", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_nic_vendor_statistics(kInvalidHandle, 0, &num_stats, nullptr);
@@ -185,18 +176,16 @@ TEST(NicUnit, GetNicVendorStatistics_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(NicUnit, GetNicVendorStatistics_AllNics) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(NicUnit, GetNicVendorStatistics_AllNics) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_nic_vendor_statistics");
-  if (dev.nics().empty()) GTEST_SKIP() << "No NIC devices";
-  for (size_t i = 0; i < dev.nics().size(); ++i) {
+  if (nics().empty()) GTEST_SKIP() << "No NIC devices";
+  for (size_t i = 0; i < nics().size(); ++i) {
     for (uint32_t port : kStatPortIndices) {
       uint32_t num_stats = 0;
       DISPLAY_AMDSMI_API(
           "amdsmi_get_nic_vendor_statistics",
           "nic=" + std::to_string(i) + " port=" + std::to_string(port) + " count-query", kVerbose);
-      amdsmi_status_t err =
-          amdsmi_get_nic_vendor_statistics(dev.nics()[i], port, &num_stats, nullptr);
+      amdsmi_status_t err = amdsmi_get_nic_vendor_statistics(nics()[i], port, &num_stats, nullptr);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record(
@@ -210,7 +199,7 @@ TEST(NicUnit, GetNicVendorStatistics_AllNics) {
       DISPLAY_AMDSMI_API("amdsmi_get_nic_vendor_statistics",
                          "nic=" + std::to_string(i) + " port=" + std::to_string(port) + " fill",
                          kVerbose);
-      err = amdsmi_get_nic_vendor_statistics(dev.nics()[i], port, &num_stats, stats.data());
+      err = amdsmi_get_nic_vendor_statistics(nics()[i], port, &num_stats, stats.data());
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("nic=" + std::to_string(i) + " port=" + std::to_string(port) + " fill", err,

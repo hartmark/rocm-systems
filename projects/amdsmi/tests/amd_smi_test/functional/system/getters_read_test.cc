@@ -30,8 +30,8 @@ using amdsmi::unittest::kVerbose;
 
 // System/topology exposes only getters. These tests verify getters return an
 // acceptable status and are stable (deterministic) across repeated reads.
-TEST(SystemFunctionalReadOnly, LibVersion_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(SystemFunctionalReadOnly, LibVersion_NullOutput) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_get_lib_version", "version=nullptr", kVerbose);
   amdsmi_status_t err = amdsmi_get_lib_version(nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
@@ -39,8 +39,8 @@ TEST(SystemFunctionalReadOnly, LibVersion_NullOutput) {
 }
 
 // Library version must be identical across repeated reads.
-TEST(SystemFunctionalReadOnly, LibVersion_Stable) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(SystemFunctionalReadOnly, LibVersion_Stable) {
+  RequireInit();
   amdsmi_version_t a, b;
   memset(&a, 0, sizeof(a));
   memset(&b, 0, sizeof(b));
@@ -59,8 +59,8 @@ TEST(SystemFunctionalReadOnly, LibVersion_Stable) {
 }
 
 // Socket count must be identical across repeated reads.
-TEST(SystemFunctionalReadOnly, SocketHandles_Stable) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(SystemFunctionalReadOnly, SocketHandles_Stable) {
+  RequireInit();
   uint32_t c1 = 0, c2 = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_socket_handles", "count x2", kVerbose);
   amdsmi_status_t e1 = amdsmi_get_socket_handles(&c1, nullptr);
@@ -75,16 +75,15 @@ TEST(SystemFunctionalReadOnly, SocketHandles_Stable) {
 }
 
 // Processor type must be identical across repeated reads for each GPU.
-TEST(SystemFunctionalReadOnly, ProcessorType_Stable) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(SystemFunctionalReadOnly, ProcessorType_Stable) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_get_processor_type");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_processor_type_t t1 = AMDSMI_PROCESSOR_TYPE_UNKNOWN;
     amdsmi_processor_type_t t2 = AMDSMI_PROCESSOR_TYPE_UNKNOWN;
     DISPLAY_AMDSMI_API("amdsmi_get_processor_type", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t e1 = amdsmi_get_processor_type(dev.gpus()[i], &t1);
-    amdsmi_status_t e2 = amdsmi_get_processor_type(dev.gpus()[i], &t2);
+    amdsmi_status_t e1 = amdsmi_get_processor_type(gpus()[i], &t1);
+    amdsmi_status_t e2 = amdsmi_get_processor_type(gpus()[i], &t2);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, e1, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     col.Record("gpu=" + std::to_string(i), e1,

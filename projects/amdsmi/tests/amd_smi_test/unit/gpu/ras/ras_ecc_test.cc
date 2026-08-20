@@ -38,17 +38,15 @@ static constexpr amdsmi_gpu_block_t kGpuBlocks[] = {
     AMDSMI_GPU_BLOCK_MPIO};
 
 // ---------------- amdsmi_get_gpu_ras_block_features_enabled (enum) ----------------
-TEST(GpuUnit, GetRasBlockFeaturesEnabled_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetRasBlockFeaturesEnabled_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_ras_block_features_enabled", "gpu=0 out=nullptr", kVerbose);
   amdsmi_status_t err =
-      amdsmi_get_gpu_ras_block_features_enabled(dev.gpus()[0], AMDSMI_GPU_BLOCK_UMC, nullptr);
+      amdsmi_get_gpu_ras_block_features_enabled(gpus()[0], AMDSMI_GPU_BLOCK_UMC, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetRasBlockFeaturesEnabled_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetRasBlockFeaturesEnabled_InvalidHandle) {
   amdsmi_ras_err_state_t state;
   memset(&state, 0, sizeof(state));
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_ras_block_features_enabled", "handle=invalid", kVerbose);
@@ -58,17 +56,16 @@ TEST(GpuUnit, GetRasBlockFeaturesEnabled_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetRasBlockFeaturesEnabled_AllGpusAllBlocks) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetRasBlockFeaturesEnabled_AllGpusAllBlocks) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_ras_block_features_enabled");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto blk : kGpuBlocks) {
       amdsmi_ras_err_state_t state;
       memset(&state, 0, sizeof(state));
       DISPLAY_AMDSMI_API("amdsmi_get_gpu_ras_block_features_enabled",
                          "gpu=" + std::to_string(i) + " block=" + std::to_string(blk), kVerbose);
-      amdsmi_status_t err = amdsmi_get_gpu_ras_block_features_enabled(dev.gpus()[i], blk, &state);
+      amdsmi_status_t err = amdsmi_get_gpu_ras_block_features_enabled(gpus()[i], blk, &state);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("gpu=" + std::to_string(i) + " block=" + std::to_string(blk), err,
@@ -80,17 +77,15 @@ TEST(GpuUnit, GetRasBlockFeaturesEnabled_AllGpusAllBlocks) {
 }
 
 // ---------------- amdsmi_get_gpu_ecc_count (enum) ----------------
-TEST(GpuUnit, GetEccCount_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetEccCount_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_ecc_count", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_ecc_count(dev.gpus()[0], AMDSMI_GPU_BLOCK_UMC, nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_ecc_count(gpus()[0], AMDSMI_GPU_BLOCK_UMC, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(GpuUnit, GetEccCount_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetEccCount_InvalidHandle) {
   amdsmi_error_count_t ec;
   memset(&ec, 0, sizeof(ec));
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_ecc_count", "handle=invalid", kVerbose);
@@ -99,17 +94,16 @@ TEST(GpuUnit, GetEccCount_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetEccCount_AllGpusAllBlocks) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetEccCount_AllGpusAllBlocks) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_ecc_count");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto blk : kGpuBlocks) {
       amdsmi_error_count_t ec;
       memset(&ec, 0, sizeof(ec));
       DISPLAY_AMDSMI_API("amdsmi_get_gpu_ecc_count",
                          "gpu=" + std::to_string(i) + " block=" + std::to_string(blk), kVerbose);
-      amdsmi_status_t err = amdsmi_get_gpu_ecc_count(dev.gpus()[i], blk, &ec);
+      amdsmi_status_t err = amdsmi_get_gpu_ecc_count(gpus()[i], blk, &ec);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("gpu=" + std::to_string(i) + " block=" + std::to_string(blk), err,
@@ -121,17 +115,15 @@ TEST(GpuUnit, GetEccCount_AllGpusAllBlocks) {
 }
 
 // ---------------- amdsmi_get_gpu_ecc_status (enum) ----------------
-TEST(GpuUnit, GetEccStatus_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetEccStatus_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_ecc_status", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_ecc_status(dev.gpus()[0], AMDSMI_GPU_BLOCK_UMC, nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_ecc_status(gpus()[0], AMDSMI_GPU_BLOCK_UMC, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(GpuUnit, GetEccStatus_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetEccStatus_InvalidHandle) {
   amdsmi_ras_err_state_t state;
   memset(&state, 0, sizeof(state));
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_ecc_status", "handle=invalid", kVerbose);
@@ -140,17 +132,16 @@ TEST(GpuUnit, GetEccStatus_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetEccStatus_AllGpusAllBlocks) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetEccStatus_AllGpusAllBlocks) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_ecc_status");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto blk : kGpuBlocks) {
       amdsmi_ras_err_state_t state;
       memset(&state, 0, sizeof(state));
       DISPLAY_AMDSMI_API("amdsmi_get_gpu_ecc_status",
                          "gpu=" + std::to_string(i) + " block=" + std::to_string(blk), kVerbose);
-      amdsmi_status_t err = amdsmi_get_gpu_ecc_status(dev.gpus()[i], blk, &state);
+      amdsmi_status_t err = amdsmi_get_gpu_ecc_status(gpus()[i], blk, &state);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("gpu=" + std::to_string(i) + " block=" + std::to_string(blk), err,
@@ -162,17 +153,15 @@ TEST(GpuUnit, GetEccStatus_AllGpusAllBlocks) {
 }
 
 // ---------------- amdsmi_get_gpu_ecc_enabled ----------------
-TEST(GpuUnit, GetEccEnabled_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetEccEnabled_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_ecc_enabled", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_ecc_enabled(dev.gpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_ecc_enabled(gpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(GpuUnit, GetEccEnabled_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetEccEnabled_InvalidHandle) {
   uint64_t blocks = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_ecc_enabled", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_gpu_ecc_enabled(kInvalidHandle, &blocks);
@@ -180,14 +169,13 @@ TEST(GpuUnit, GetEccEnabled_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetEccEnabled_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetEccEnabled_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_ecc_enabled");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     uint64_t blocks = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_ecc_enabled", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_gpu_ecc_enabled(dev.gpus()[i], &blocks);
+    amdsmi_status_t err = amdsmi_get_gpu_ecc_enabled(gpus()[i], &blocks);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -199,16 +187,14 @@ TEST(GpuUnit, GetEccEnabled_AllGpus) {
 }
 
 // ---------------- amdsmi_get_gpu_total_ecc_count ----------------
-TEST(GpuUnit, GetTotalEccCount_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetTotalEccCount_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_total_ecc_count", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_total_ecc_count(dev.gpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_total_ecc_count(gpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetTotalEccCount_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetTotalEccCount_InvalidHandle) {
   amdsmi_error_count_t ec;
   memset(&ec, 0, sizeof(ec));
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_total_ecc_count", "handle=invalid", kVerbose);
@@ -217,15 +203,14 @@ TEST(GpuUnit, GetTotalEccCount_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetTotalEccCount_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetTotalEccCount_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_total_ecc_count");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_error_count_t ec;
     memset(&ec, 0, sizeof(ec));
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_total_ecc_count", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_gpu_total_ecc_count(dev.gpus()[i], &ec);
+    amdsmi_status_t err = amdsmi_get_gpu_total_ecc_count(gpus()[i], &ec);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -237,16 +222,14 @@ TEST(GpuUnit, GetTotalEccCount_AllGpus) {
 }
 
 // ---------------- amdsmi_get_gpu_ras_feature_info ----------------
-TEST(GpuUnit, GetRasFeatureInfo_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetRasFeatureInfo_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_ras_feature_info", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_ras_feature_info(dev.gpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_ras_feature_info(gpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetRasFeatureInfo_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetRasFeatureInfo_InvalidHandle) {
   amdsmi_ras_feature_t rf;
   memset(&rf, 0, sizeof(rf));
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_ras_feature_info", "handle=invalid", kVerbose);
@@ -255,15 +238,14 @@ TEST(GpuUnit, GetRasFeatureInfo_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetRasFeatureInfo_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetRasFeatureInfo_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_ras_feature_info");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_ras_feature_t rf;
     memset(&rf, 0, sizeof(rf));
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_ras_feature_info", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_gpu_ras_feature_info(dev.gpus()[i], &rf);
+    amdsmi_status_t err = amdsmi_get_gpu_ras_feature_info(gpus()[i], &rf);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -275,21 +257,19 @@ TEST(GpuUnit, GetRasFeatureInfo_AllGpus) {
 }
 
 // ---------------- amdsmi_gpu_validate_ras_eeprom (action) ----------------
-TEST(GpuUnit, ValidateRasEeprom_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, ValidateRasEeprom_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_gpu_validate_ras_eeprom", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_gpu_validate_ras_eeprom(kInvalidHandle);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, ValidateRasEeprom_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, ValidateRasEeprom_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_gpu_validate_ras_eeprom");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_gpu_validate_ras_eeprom", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_gpu_validate_ras_eeprom(dev.gpus()[i]);
+    amdsmi_status_t err = amdsmi_gpu_validate_ras_eeprom(gpus()[i]);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -302,18 +282,16 @@ TEST(GpuUnit, ValidateRasEeprom_AllGpus) {
 }
 
 // ---------------- amdsmi_get_gpu_cper_entries ----------------
-TEST(GpuUnit, GetCperEntries_NullOutput) {
+TEST_F(GpuUnit, GetCperEntries_NullOutput) {
   GTEST_SKIP() << "amdsmi_get_gpu_cper_entries returns OUT_OF_RESOURCES instead of INVAL for null "
                   "pointer; library input-validation bug";
-  amdsmi::unittest::UnitDevices dev;
   // Proper contract once fixed:
   //   char cper_data[4096]; memset(cper_data, 0, sizeof(cper_data));
-  //   amdsmi_status_t err = amdsmi_get_gpu_cper_entries(dev.gpus()[0], 0xFFFFFFFF,
+  //   amdsmi_status_t err = amdsmi_get_gpu_cper_entries(gpus()[0], 0xFFFFFFFF,
   //       cper_data, nullptr, nullptr, nullptr, nullptr);
   //   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(GpuUnit, GetCperEntries_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetCperEntries_InvalidHandle) {
   char cper_data[4096];
   memset(cper_data, 0, sizeof(cper_data));
   uint64_t buf_size = sizeof(cper_data);
@@ -327,11 +305,10 @@ TEST(GpuUnit, GetCperEntries_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetCperEntries_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetCperEntries_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_cper_entries");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     char cper_data[4096];
     memset(cper_data, 0, sizeof(cper_data));
     uint64_t buf_size = sizeof(cper_data);
@@ -339,8 +316,8 @@ TEST(GpuUnit, GetCperEntries_AllGpus) {
     memset(hdrs, 0, sizeof(hdrs));
     uint64_t entry_count = 16, cursor = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_cper_entries", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_gpu_cper_entries(dev.gpus()[i], 0xFFFFFFFF, cper_data,
-                                                      &buf_size, hdrs, &entry_count, &cursor);
+    amdsmi_status_t err = amdsmi_get_gpu_cper_entries(gpus()[i], 0xFFFFFFFF, cper_data, &buf_size,
+                                                      hdrs, &entry_count, &cursor);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -352,8 +329,7 @@ TEST(GpuUnit, GetCperEntries_AllGpus) {
 }
 
 // ---------------- amdsmi_get_afids_from_cper (no handle) ----------------
-TEST(GpuUnit, GetAfidsFromCper_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetAfidsFromCper_NullOutput) {
   char cper_buffer[256];
   memset(cper_buffer, 0, sizeof(cper_buffer));
   DISPLAY_AMDSMI_API("amdsmi_get_afids_from_cper", "out=nullptr", kVerbose);
@@ -363,11 +339,10 @@ TEST(GpuUnit, GetAfidsFromCper_NullOutput) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetAfidsFromCper_DummyBuffer) {
+TEST_F(GpuUnit, GetAfidsFromCper_DummyBuffer) {
   GTEST_SKIP() << "amdsmi_get_afids_from_cper returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause "
                   "unknown, under investigation";
 
-  amdsmi::unittest::UnitDevices dev;
   char cper_buffer[256];
   memset(cper_buffer, 0, sizeof(cper_buffer));
   uint64_t afids[16];

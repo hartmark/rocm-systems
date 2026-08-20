@@ -32,23 +32,21 @@ static constexpr amdsmi_event_group_t kEventGroups[] = {AMDSMI_EVNT_GRP_XGMI,
                                                         AMDSMI_EVNT_GRP_XGMI_DATA_OUT};
 
 // ---------------- amdsmi_gpu_counter_group_supported (enum) ----------------
-TEST(GpuUnit, CounterGroupSupported_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, CounterGroupSupported_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_gpu_counter_group_supported", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_gpu_counter_group_supported(kInvalidHandle, AMDSMI_EVNT_GRP_XGMI);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, CounterGroupSupported_AllGpusAllGroups) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, CounterGroupSupported_AllGpusAllGroups) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_gpu_counter_group_supported");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto grp : kEventGroups) {
       DISPLAY_AMDSMI_API("amdsmi_gpu_counter_group_supported",
                          "gpu=" + std::to_string(i) + " grp=" + std::to_string(grp), kVerbose);
-      amdsmi_status_t err = amdsmi_gpu_counter_group_supported(dev.gpus()[i], grp);
+      amdsmi_status_t err = amdsmi_gpu_counter_group_supported(gpus()[i], grp);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("gpu=" + std::to_string(i) + " grp=" + std::to_string(grp), err,
@@ -60,18 +58,15 @@ TEST(GpuUnit, CounterGroupSupported_AllGpusAllGroups) {
 }
 
 // ---------------- amdsmi_get_gpu_available_counters (enum) ----------------
-TEST(GpuUnit, GetAvailableCounters_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetAvailableCounters_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_available_counters", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err =
-      amdsmi_get_gpu_available_counters(dev.gpus()[0], AMDSMI_EVNT_GRP_XGMI, nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_available_counters(gpus()[0], AMDSMI_EVNT_GRP_XGMI, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(GpuUnit, GetAvailableCounters_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetAvailableCounters_InvalidHandle) {
   uint32_t available = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_available_counters", "handle=invalid", kVerbose);
   amdsmi_status_t err =
@@ -80,16 +75,15 @@ TEST(GpuUnit, GetAvailableCounters_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetAvailableCounters_AllGpusAllGroups) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetAvailableCounters_AllGpusAllGroups) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_available_counters");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto grp : kEventGroups) {
       uint32_t available = 0;
       DISPLAY_AMDSMI_API("amdsmi_get_gpu_available_counters",
                          "gpu=" + std::to_string(i) + " grp=" + std::to_string(grp), kVerbose);
-      amdsmi_status_t err = amdsmi_get_gpu_available_counters(dev.gpus()[i], grp, &available);
+      amdsmi_status_t err = amdsmi_get_gpu_available_counters(gpus()[i], grp, &available);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("gpu=" + std::to_string(i) + " grp=" + std::to_string(grp), err,
@@ -101,18 +95,15 @@ TEST(GpuUnit, GetAvailableCounters_AllGpusAllGroups) {
 }
 
 // ---------------- amdsmi_gpu_create_counter ----------------
-TEST(GpuUnit, CreateCounter_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, CreateCounter_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_gpu_create_counter", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err =
-      amdsmi_gpu_create_counter(dev.gpus()[0], AMDSMI_EVNT_XGMI_0_NOP_TX, nullptr);
+  amdsmi_status_t err = amdsmi_gpu_create_counter(gpus()[0], AMDSMI_EVNT_XGMI_0_NOP_TX, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(GpuUnit, CreateCounter_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, CreateCounter_InvalidHandle) {
   amdsmi_event_handle_t evt = 0;
   DISPLAY_AMDSMI_API("amdsmi_gpu_create_counter", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_gpu_create_counter(kInvalidHandle, AMDSMI_EVNT_XGMI_0_NOP_TX, &evt);
@@ -122,8 +113,7 @@ TEST(GpuUnit, CreateCounter_InvalidHandle) {
 }
 
 // ---------------- amdsmi_gpu_destroy_counter (invalid) ----------------
-TEST(GpuUnit, DestroyCounter_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, DestroyCounter_InvalidHandle) {
   amdsmi_event_handle_t evt = 0;
   DISPLAY_AMDSMI_API("amdsmi_gpu_destroy_counter", "evt=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_gpu_destroy_counter(evt);
@@ -133,18 +123,16 @@ TEST(GpuUnit, DestroyCounter_InvalidHandle) {
 }
 
 // ---------------- amdsmi_gpu_control_counter (invalid) ----------------
-TEST(GpuUnit, ControlCounter_InvalidHandle) {
+TEST_F(GpuUnit, ControlCounter_InvalidHandle) {
   GTEST_SKIP() << "amdsmi_gpu_control_counter crashes on an invalid handle; proper return "
                   "should be AMDSMI_STATUS_INVAL";
-  amdsmi::unittest::UnitDevices dev;
   // Proper contract once fixed:
   //   amdsmi_status_t err = amdsmi_gpu_control_counter(kInvalidHandle, AMDSMI_CNTR_CMD_START,
   //   nullptr); AMDSMI_EXPECT_NULL_ARG(err);
 }
 
 // ---------------- amdsmi_gpu_read_counter (invalid) ----------------
-TEST(GpuUnit, ReadCounter_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, ReadCounter_NullOutput) {
   amdsmi_event_handle_t evt = 0;
   DISPLAY_AMDSMI_API("amdsmi_gpu_read_counter", "value=nullptr", kVerbose);
   amdsmi_status_t err = amdsmi_gpu_read_counter(evt, nullptr);
@@ -152,8 +140,7 @@ TEST(GpuUnit, ReadCounter_NullOutput) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, ReadCounter_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, ReadCounter_InvalidHandle) {
   amdsmi_event_handle_t evt = 0;
   amdsmi_counter_value_t value;
   memset(&value, 0, sizeof(value));
@@ -165,17 +152,16 @@ TEST(GpuUnit, ReadCounter_InvalidHandle) {
 }
 
 // ---------------- valid create/control/read/destroy flow ----------------
-TEST(GpuUnit, CounterLifecycle_AllGpus) {
+TEST_F(GpuUnit, CounterLifecycle_AllGpus) {
   GTEST_SKIP() << "amdsmi_gpu_create_event/control_counter returns AMDSMI_STATUS_UNEXPECTED_DATA; "
                   "root cause unknown, under investigation";
 
-  amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_gpu_create_counter");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_event_handle_t evt = 0;
     DISPLAY_AMDSMI_API("amdsmi_gpu_create_counter", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_gpu_create_counter(dev.gpus()[i], AMDSMI_EVNT_XGMI_0_NOP_TX, &evt);
+    amdsmi_status_t err = amdsmi_gpu_create_counter(gpus()[i], AMDSMI_EVNT_XGMI_0_NOP_TX, &evt);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);

@@ -37,16 +37,14 @@ static constexpr amdsmi_clk_limit_type_t kClkLimitTypes[] = {AMDSMI_CLK_LIMIT_MI
                                                              AMDSMI_CLK_LIMIT_MAX};
 
 // ---------------- amdsmi_get_clk_freq (enum) ----------------
-TEST(GpuUnit, GetClkFreq_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetClkFreq_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_clk_freq", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_clk_freq(dev.gpus()[0], AMDSMI_CLK_TYPE_SYS, nullptr);
+  amdsmi_status_t err = amdsmi_get_clk_freq(gpus()[0], AMDSMI_CLK_TYPE_SYS, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetClkFreq_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetClkFreq_InvalidHandle) {
   amdsmi_frequencies_t f;
   memset(&f, 0, sizeof(f));
   DISPLAY_AMDSMI_API("amdsmi_get_clk_freq", "handle=invalid", kVerbose);
@@ -55,20 +53,19 @@ TEST(GpuUnit, GetClkFreq_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetClkFreq_AllGpusAllTypes) {
+TEST_F(GpuUnit, GetClkFreq_AllGpusAllTypes) {
   GTEST_SKIP() << "amdsmi_get_clk_freq returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause unknown, "
                   "under investigation";
 
-  amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_clk_freq");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto ct : kClkTypes) {
       amdsmi_frequencies_t f;
       memset(&f, 0, sizeof(f));
       DISPLAY_AMDSMI_API("amdsmi_get_clk_freq",
                          "gpu=" + std::to_string(i) + " clk=" + std::to_string(ct), kVerbose);
-      amdsmi_status_t err = amdsmi_get_clk_freq(dev.gpus()[i], ct, &f);
+      amdsmi_status_t err = amdsmi_get_clk_freq(gpus()[i], ct, &f);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("gpu=" + std::to_string(i) + " clk=" + std::to_string(ct), err,
@@ -80,16 +77,14 @@ TEST(GpuUnit, GetClkFreq_AllGpusAllTypes) {
 }
 
 // ---------------- amdsmi_get_clock_info (enum) ----------------
-TEST(GpuUnit, GetClockInfo_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetClockInfo_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_clock_info", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_clock_info(dev.gpus()[0], AMDSMI_CLK_TYPE_SYS, nullptr);
+  amdsmi_status_t err = amdsmi_get_clock_info(gpus()[0], AMDSMI_CLK_TYPE_SYS, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetClockInfo_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetClockInfo_InvalidHandle) {
   amdsmi_clk_info_t info;
   memset(&info, 0, sizeof(info));
   DISPLAY_AMDSMI_API("amdsmi_get_clock_info", "handle=invalid", kVerbose);
@@ -98,20 +93,19 @@ TEST(GpuUnit, GetClockInfo_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetClockInfo_AllGpusAllTypes) {
+TEST_F(GpuUnit, GetClockInfo_AllGpusAllTypes) {
   GTEST_SKIP() << "amdsmi_get_clk_info returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause unknown, "
                   "under investigation";
 
-  amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_clock_info");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto ct : kClkTypes) {
       amdsmi_clk_info_t info;
       memset(&info, 0, sizeof(info));
       DISPLAY_AMDSMI_API("amdsmi_get_clock_info",
                          "gpu=" + std::to_string(i) + " clk=" + std::to_string(ct), kVerbose);
-      amdsmi_status_t err = amdsmi_get_clock_info(dev.gpus()[i], ct, &info);
+      amdsmi_status_t err = amdsmi_get_clock_info(gpus()[i], ct, &info);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("gpu=" + std::to_string(i) + " clk=" + std::to_string(ct), err,
@@ -123,16 +117,14 @@ TEST(GpuUnit, GetClockInfo_AllGpusAllTypes) {
 }
 
 // ---------------- amdsmi_get_soc_pstate ----------------
-TEST(GpuUnit, GetSocPstate_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetSocPstate_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_soc_pstate", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_soc_pstate(dev.gpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_soc_pstate(gpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetSocPstate_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetSocPstate_InvalidHandle) {
   amdsmi_dpm_policy_t policy;
   memset(&policy, 0, sizeof(policy));
   DISPLAY_AMDSMI_API("amdsmi_get_soc_pstate", "handle=invalid", kVerbose);
@@ -141,15 +133,14 @@ TEST(GpuUnit, GetSocPstate_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetSocPstate_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetSocPstate_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_soc_pstate");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_dpm_policy_t policy;
     memset(&policy, 0, sizeof(policy));
     DISPLAY_AMDSMI_API("amdsmi_get_soc_pstate", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_soc_pstate(dev.gpus()[i], &policy);
+    amdsmi_status_t err = amdsmi_get_soc_pstate(gpus()[i], &policy);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -161,16 +152,14 @@ TEST(GpuUnit, GetSocPstate_AllGpus) {
 }
 
 // ---------------- amdsmi_get_xgmi_plpd ----------------
-TEST(GpuUnit, GetXgmiPlpd_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetXgmiPlpd_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_xgmi_plpd", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_xgmi_plpd(dev.gpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_xgmi_plpd(gpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetXgmiPlpd_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetXgmiPlpd_InvalidHandle) {
   amdsmi_dpm_policy_t plpd;
   memset(&plpd, 0, sizeof(plpd));
   DISPLAY_AMDSMI_API("amdsmi_get_xgmi_plpd", "handle=invalid", kVerbose);
@@ -179,15 +168,14 @@ TEST(GpuUnit, GetXgmiPlpd_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetXgmiPlpd_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetXgmiPlpd_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_xgmi_plpd");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_dpm_policy_t plpd;
     memset(&plpd, 0, sizeof(plpd));
     DISPLAY_AMDSMI_API("amdsmi_get_xgmi_plpd", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_xgmi_plpd(dev.gpus()[i], &plpd);
+    amdsmi_status_t err = amdsmi_get_xgmi_plpd(gpus()[i], &plpd);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -199,29 +187,27 @@ TEST(GpuUnit, GetXgmiPlpd_AllGpus) {
 }
 
 // ---------------- amdsmi_set_clk_freq (SET, enum) ----------------
-TEST(GpuUnit, SetClkFreq_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetClkFreq_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_clk_freq", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_clk_freq(kInvalidHandle, AMDSMI_CLK_TYPE_SYS, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, SetClkFreq_AllGpusAllTypes) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetClkFreq_AllGpusAllTypes) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_clk_freq");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto ct : kClkTypes) {
       DISPLAY_AMDSMI_API("amdsmi_set_clk_freq",
                          "gpu=" + std::to_string(i) + " clk=" + std::to_string(ct), kVerbose);
       amdsmi_frequencies_t curf;
       memset(&curf, 0, sizeof(curf));
-      if (amdsmi_get_clk_freq(dev.gpus()[i], ct, &curf) != AMDSMI_STATUS_SUCCESS ||
+      if (amdsmi_get_clk_freq(gpus()[i], ct, &curf) != AMDSMI_STATUS_SUCCESS ||
           curf.num_supported == 0)
         continue;  // no readable levels -> no safe mask to write back
       uint64_t mask = (curf.num_supported >= 64) ? ~0ULL : ((1ULL << curf.num_supported) - 1);
-      amdsmi_status_t err = amdsmi_set_clk_freq(dev.gpus()[i], ct, mask);
+      amdsmi_status_t err = amdsmi_set_clk_freq(gpus()[i], ct, mask);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                             AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_INVAL);
@@ -235,8 +221,7 @@ TEST(GpuUnit, SetClkFreq_AllGpusAllTypes) {
 }
 
 // ---------------- amdsmi_set_gpu_clk_limit (SET, two enums) ----------------
-TEST(GpuUnit, SetClkLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetClkLimit_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_clk_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err =
       amdsmi_set_gpu_clk_limit(kInvalidHandle, AMDSMI_CLK_TYPE_SYS, AMDSMI_CLK_LIMIT_MAX, 0);
@@ -244,19 +229,18 @@ TEST(GpuUnit, SetClkLimit_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, SetClkLimit_AllGpusAllTypes) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
+TEST_F(GpuUnit, SetClkLimit_AllGpusAllTypes) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_gpu_clk_limit");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i)
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i)
     for (auto ct : kClkTypes)
       for (auto lt : kClkLimitTypes) {
         DISPLAY_AMDSMI_API("amdsmi_set_gpu_clk_limit",
                            "gpu=" + std::to_string(i) + " clk=" + std::to_string(ct) +
                                " limit=" + std::to_string(lt),
                            kVerbose);
-        amdsmi_status_t err = amdsmi_set_gpu_clk_limit(dev.gpus()[i], ct, lt, 0);
+        amdsmi_status_t err = amdsmi_set_gpu_clk_limit(gpus()[i], ct, lt, 0);
         DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                               AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                               AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_INVAL);
@@ -272,24 +256,22 @@ TEST(GpuUnit, SetClkLimit_AllGpusAllTypes) {
 }
 
 // ---------------- amdsmi_set_soc_pstate (SET) ----------------
-TEST(GpuUnit, SetSocPstate_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetSocPstate_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_soc_pstate", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_soc_pstate(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, SetSocPstate_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetSocPstate_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_soc_pstate");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_dpm_policy_t policy;
     memset(&policy, 0, sizeof(policy));
-    if (amdsmi_get_soc_pstate(dev.gpus()[i], &policy) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_soc_pstate(gpus()[i], &policy) != AMDSMI_STATUS_SUCCESS) continue;
     DISPLAY_AMDSMI_API("amdsmi_set_soc_pstate", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_set_soc_pstate(dev.gpus()[i], policy.current);
+    amdsmi_status_t err = amdsmi_set_soc_pstate(gpus()[i], policy.current);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -302,24 +284,22 @@ TEST(GpuUnit, SetSocPstate_AllGpus) {
 }
 
 // ---------------- amdsmi_set_xgmi_plpd (SET) ----------------
-TEST(GpuUnit, SetXgmiPlpd_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetXgmiPlpd_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_xgmi_plpd", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_xgmi_plpd(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, SetXgmiPlpd_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetXgmiPlpd_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_xgmi_plpd");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_dpm_policy_t plpd;
     memset(&plpd, 0, sizeof(plpd));
-    if (amdsmi_get_xgmi_plpd(dev.gpus()[i], &plpd) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_xgmi_plpd(gpus()[i], &plpd) != AMDSMI_STATUS_SUCCESS) continue;
     DISPLAY_AMDSMI_API("amdsmi_set_xgmi_plpd", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_set_xgmi_plpd(dev.gpus()[i], plpd.current);
+    amdsmi_status_t err = amdsmi_set_xgmi_plpd(gpus()[i], plpd.current);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);

@@ -34,8 +34,7 @@ using amdsmi::unittest::kVerbose;
 // The shared framework already holds an init open for the duration of the
 // fixture. Adding one init here bumps the refcount; the paired shut_down below
 // returns it to the pre-test value, so no dangling init is left behind.
-TEST(SystemUnit, InitShutDown_Balanced) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(SystemUnit, InitShutDown_Balanced) {
   DISPLAY_AMDSMI_API("amdsmi_init", "flags=AMDSMI_INIT_ALL_PROCESSORS", kVerbose);
   amdsmi_status_t err = amdsmi_init(AMDSMI_INIT_ALL_PROCESSORS);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
@@ -54,15 +53,13 @@ TEST(SystemUnit, InitShutDown_Balanced) {
 }
 
 // ---- amdsmi_get_lib_version : invalid params first ----
-TEST(SystemUnit, GetLibVersion_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(SystemUnit, GetLibVersion_NullOutput) {
   DISPLAY_AMDSMI_API("amdsmi_get_lib_version", "version=nullptr", kVerbose);
   amdsmi_status_t err = amdsmi_get_lib_version(nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(SystemUnit, GetLibVersion_Valid) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(SystemUnit, GetLibVersion_Valid) {
   amdsmi_version_t version;
   memset(&version, 0, sizeof(version));
   DISPLAY_AMDSMI_API("amdsmi_get_lib_version", "valid out", kVerbose);
@@ -74,16 +71,14 @@ TEST(SystemUnit, GetLibVersion_Valid) {
 }
 
 // ---- amdsmi_status_code_to_string : invalid params first ----
-TEST(SystemUnit, StatusCodeToString_NullOutput) {
+TEST_F(SystemUnit, StatusCodeToString_NullOutput) {
   GTEST_SKIP() << "amdsmi_status_code_to_string crashes on a null output pointer; proper return "
                   "should be AMDSMI_STATUS_INVAL";
-  amdsmi::unittest::UnitDevices dev;
   // Proper contract once fixed:
   //   amdsmi_status_t err = amdsmi_status_code_to_string(AMDSMI_STATUS_SUCCESS, nullptr);
   //   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(SystemUnit, StatusCodeToString_AllCodes) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(SystemUnit, StatusCodeToString_AllCodes) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_status_code_to_string");
   static constexpr amdsmi_status_t kCodes[] = {AMDSMI_STATUS_SUCCESS,
                                                AMDSMI_STATUS_INVAL,

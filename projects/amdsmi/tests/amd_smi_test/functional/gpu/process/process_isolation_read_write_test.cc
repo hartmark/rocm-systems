@@ -29,8 +29,8 @@ using amdsmi::unittest::kInvalidHandle;
 using amdsmi::unittest::kVerbose;
 
 // amdsmi_get_gpu_process_isolation / amdsmi_set_gpu_process_isolation.
-TEST(GpuFunctionalReadWrite, SetProcessIsolation_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetProcessIsolation_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_process_isolation", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_gpu_process_isolation(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -38,20 +38,18 @@ TEST(GpuFunctionalReadWrite, SetProcessIsolation_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, ProcessIsolation_SetVerifyRestore) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadWrite, ProcessIsolation_SetVerifyRestore) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_gpu_process_isolation");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     uint32_t initial = 0;
-    if (amdsmi_get_gpu_process_isolation(dev.gpus()[i], &initial) != AMDSMI_STATUS_SUCCESS)
-      continue;
+    if (amdsmi_get_gpu_process_isolation(gpus()[i], &initial) != AMDSMI_STATUS_SUCCESS) continue;
 
     uint32_t target = initial ? 0u : 1u;
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_process_isolation",
                        "gpu=" + std::to_string(i) + " set=" + std::to_string(target), kVerbose);
-    amdsmi_status_t err = amdsmi_set_gpu_process_isolation(dev.gpus()[i], target);
+    amdsmi_status_t err = amdsmi_set_gpu_process_isolation(gpus()[i], target);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -62,10 +60,10 @@ TEST(GpuFunctionalReadWrite, ProcessIsolation_SetVerifyRestore) {
 
     if (err == AMDSMI_STATUS_SUCCESS) {
       uint32_t readback = 0;
-      if (amdsmi_get_gpu_process_isolation(dev.gpus()[i], &readback) == AMDSMI_STATUS_SUCCESS) {
+      if (amdsmi_get_gpu_process_isolation(gpus()[i], &readback) == AMDSMI_STATUS_SUCCESS) {
         EXPECT_EQ(readback, target) << "gpu=" << i << " set did not take effect";
       }
-      amdsmi_status_t rerr = amdsmi_set_gpu_process_isolation(dev.gpus()[i], initial);
+      amdsmi_status_t rerr = amdsmi_set_gpu_process_isolation(gpus()[i], initial);
       DISPLAY_AMDSMI_API("amdsmi_set_gpu_process_isolation",
                          "gpu=" + std::to_string(i) + " restore=" + std::to_string(initial),
                          kVerbose);
@@ -73,7 +71,7 @@ TEST(GpuFunctionalReadWrite, ProcessIsolation_SetVerifyRestore) {
       EXPECT_EQ(rerr, AMDSMI_STATUS_SUCCESS)
           << "gpu=" << i << " failed to restore process isolation";
       if (rerr == AMDSMI_STATUS_SUCCESS &&
-          amdsmi_get_gpu_process_isolation(dev.gpus()[i], &readback) == AMDSMI_STATUS_SUCCESS) {
+          amdsmi_get_gpu_process_isolation(gpus()[i], &readback) == AMDSMI_STATUS_SUCCESS) {
         EXPECT_EQ(readback, initial) << "gpu=" << i << " restore did not take effect";
       }
     }

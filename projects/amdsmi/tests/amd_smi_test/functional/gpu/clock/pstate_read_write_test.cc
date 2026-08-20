@@ -29,8 +29,8 @@ using amdsmi::unittest::kInvalidHandle;
 using amdsmi::unittest::kVerbose;
 
 // amdsmi_get_soc_pstate / amdsmi_set_soc_pstate.
-TEST(GpuFunctionalReadWrite, SetSocPstate_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetSocPstate_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_soc_pstate", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_soc_pstate(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -38,15 +38,14 @@ TEST(GpuFunctionalReadWrite, SetSocPstate_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, SocPstate_SetVerifyRestore) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadWrite, SocPstate_SetVerifyRestore) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_soc_pstate");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_dpm_policy_t policy;
     memset(&policy, 0, sizeof(policy));
-    if (amdsmi_get_soc_pstate(dev.gpus()[i], &policy) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_soc_pstate(gpus()[i], &policy) != AMDSMI_STATUS_SUCCESS) continue;
     if (policy.num_supported == 0 || policy.current >= policy.num_supported) continue;
 
     uint32_t initial_id = policy.policies[policy.current].policy_id;
@@ -63,7 +62,7 @@ TEST(GpuFunctionalReadWrite, SocPstate_SetVerifyRestore) {
 
     DISPLAY_AMDSMI_API("amdsmi_set_soc_pstate",
                        "gpu=" + std::to_string(i) + " set=" + std::to_string(target_id), kVerbose);
-    amdsmi_status_t err = amdsmi_set_soc_pstate(dev.gpus()[i], target_id);
+    amdsmi_status_t err = amdsmi_set_soc_pstate(gpus()[i], target_id);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -75,12 +74,12 @@ TEST(GpuFunctionalReadWrite, SocPstate_SetVerifyRestore) {
     if (err == AMDSMI_STATUS_SUCCESS) {
       amdsmi_dpm_policy_t readback;
       memset(&readback, 0, sizeof(readback));
-      if (amdsmi_get_soc_pstate(dev.gpus()[i], &readback) == AMDSMI_STATUS_SUCCESS &&
+      if (amdsmi_get_soc_pstate(gpus()[i], &readback) == AMDSMI_STATUS_SUCCESS &&
           readback.current < readback.num_supported) {
         EXPECT_EQ(readback.policies[readback.current].policy_id, target_id)
             << "gpu=" << i << " set did not take effect";
       }
-      amdsmi_status_t rerr = amdsmi_set_soc_pstate(dev.gpus()[i], initial_id);
+      amdsmi_status_t rerr = amdsmi_set_soc_pstate(gpus()[i], initial_id);
       DISPLAY_AMDSMI_API("amdsmi_set_soc_pstate",
                          "gpu=" + std::to_string(i) + " restore=" + std::to_string(initial_id),
                          kVerbose);
@@ -92,8 +91,8 @@ TEST(GpuFunctionalReadWrite, SocPstate_SetVerifyRestore) {
 }
 
 // amdsmi_get_xgmi_plpd / amdsmi_set_xgmi_plpd.
-TEST(GpuFunctionalReadWrite, SetXgmiPlpd_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetXgmiPlpd_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_xgmi_plpd", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_xgmi_plpd(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -101,15 +100,14 @@ TEST(GpuFunctionalReadWrite, SetXgmiPlpd_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, XgmiPlpd_SetVerifyRestore) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadWrite, XgmiPlpd_SetVerifyRestore) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_xgmi_plpd");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_dpm_policy_t policy;
     memset(&policy, 0, sizeof(policy));
-    if (amdsmi_get_xgmi_plpd(dev.gpus()[i], &policy) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_xgmi_plpd(gpus()[i], &policy) != AMDSMI_STATUS_SUCCESS) continue;
     if (policy.num_supported == 0 || policy.current >= policy.num_supported) continue;
 
     uint32_t initial_id = policy.policies[policy.current].policy_id;
@@ -126,7 +124,7 @@ TEST(GpuFunctionalReadWrite, XgmiPlpd_SetVerifyRestore) {
 
     DISPLAY_AMDSMI_API("amdsmi_set_xgmi_plpd",
                        "gpu=" + std::to_string(i) + " set=" + std::to_string(target_id), kVerbose);
-    amdsmi_status_t err = amdsmi_set_xgmi_plpd(dev.gpus()[i], target_id);
+    amdsmi_status_t err = amdsmi_set_xgmi_plpd(gpus()[i], target_id);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -138,12 +136,12 @@ TEST(GpuFunctionalReadWrite, XgmiPlpd_SetVerifyRestore) {
     if (err == AMDSMI_STATUS_SUCCESS) {
       amdsmi_dpm_policy_t readback;
       memset(&readback, 0, sizeof(readback));
-      if (amdsmi_get_xgmi_plpd(dev.gpus()[i], &readback) == AMDSMI_STATUS_SUCCESS &&
+      if (amdsmi_get_xgmi_plpd(gpus()[i], &readback) == AMDSMI_STATUS_SUCCESS &&
           readback.current < readback.num_supported) {
         EXPECT_EQ(readback.policies[readback.current].policy_id, target_id)
             << "gpu=" << i << " set did not take effect";
       }
-      amdsmi_status_t rerr = amdsmi_set_xgmi_plpd(dev.gpus()[i], initial_id);
+      amdsmi_status_t rerr = amdsmi_set_xgmi_plpd(gpus()[i], initial_id);
       DISPLAY_AMDSMI_API("amdsmi_set_xgmi_plpd",
                          "gpu=" + std::to_string(i) + " restore=" + std::to_string(initial_id),
                          kVerbose);

@@ -29,8 +29,8 @@ using amdsmi::unittest::kInvalidHandle;
 using amdsmi::unittest::kVerbose;
 
 // amdsmi_get_power_cap_info / amdsmi_set_power_cap.
-TEST(GpuFunctionalReadWrite, SetPowerCap_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetPowerCap_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_power_cap", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_power_cap(kInvalidHandle, 0, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -38,15 +38,14 @@ TEST(GpuFunctionalReadWrite, SetPowerCap_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, PowerCap_SetVerifyRestore) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadWrite, PowerCap_SetVerifyRestore) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_power_cap");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_power_cap_info_t info;
     memset(&info, 0, sizeof(info));
-    if (amdsmi_get_power_cap_info(dev.gpus()[i], 0, &info) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_power_cap_info(gpus()[i], 0, &info) != AMDSMI_STATUS_SUCCESS) continue;
     if (info.max_power_cap <= info.min_power_cap) continue;
 
     uint64_t initial = info.power_cap;
@@ -56,7 +55,7 @@ TEST(GpuFunctionalReadWrite, PowerCap_SetVerifyRestore) {
 
     DISPLAY_AMDSMI_API("amdsmi_set_power_cap",
                        "gpu=" + std::to_string(i) + " set=" + std::to_string(target), kVerbose);
-    amdsmi_status_t err = amdsmi_set_power_cap(dev.gpus()[i], 0, target);
+    amdsmi_status_t err = amdsmi_set_power_cap(gpus()[i], 0, target);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -68,17 +67,17 @@ TEST(GpuFunctionalReadWrite, PowerCap_SetVerifyRestore) {
     if (err == AMDSMI_STATUS_SUCCESS) {
       amdsmi_power_cap_info_t readback;
       memset(&readback, 0, sizeof(readback));
-      if (amdsmi_get_power_cap_info(dev.gpus()[i], 0, &readback) == AMDSMI_STATUS_SUCCESS) {
+      if (amdsmi_get_power_cap_info(gpus()[i], 0, &readback) == AMDSMI_STATUS_SUCCESS) {
         EXPECT_EQ(readback.power_cap, target) << "gpu=" << i << " set did not take effect";
       }
-      amdsmi_status_t rerr = amdsmi_set_power_cap(dev.gpus()[i], 0, initial);
+      amdsmi_status_t rerr = amdsmi_set_power_cap(gpus()[i], 0, initial);
       DISPLAY_AMDSMI_API("amdsmi_set_power_cap",
                          "gpu=" + std::to_string(i) + " restore=" + std::to_string(initial),
                          kVerbose);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, rerr, AMDSMI_STATUS_SUCCESS);
       EXPECT_EQ(rerr, AMDSMI_STATUS_SUCCESS) << "gpu=" << i << " failed to restore power cap";
       if (rerr == AMDSMI_STATUS_SUCCESS &&
-          amdsmi_get_power_cap_info(dev.gpus()[i], 0, &readback) == AMDSMI_STATUS_SUCCESS) {
+          amdsmi_get_power_cap_info(gpus()[i], 0, &readback) == AMDSMI_STATUS_SUCCESS) {
         EXPECT_EQ(readback.power_cap, initial) << "gpu=" << i << " restore did not take effect";
       }
     }
@@ -87,8 +86,8 @@ TEST(GpuFunctionalReadWrite, PowerCap_SetVerifyRestore) {
 }
 
 // amdsmi_get_gpu_power_profile_presets / amdsmi_set_gpu_power_profile.
-TEST(GpuFunctionalReadWrite, SetPowerProfile_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetPowerProfile_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_power_profile", "handle=invalid", kVerbose);
   amdsmi_status_t err =
       amdsmi_set_gpu_power_profile(kInvalidHandle, 0, AMDSMI_PWR_PROF_PRST_BOOTUP_DEFAULT);
@@ -97,15 +96,14 @@ TEST(GpuFunctionalReadWrite, SetPowerProfile_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, PowerProfile_SetVerifyRestore) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadWrite, PowerProfile_SetVerifyRestore) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_gpu_power_profile");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_power_profile_status_t status;
     memset(&status, 0, sizeof(status));
-    if (amdsmi_get_gpu_power_profile_presets(dev.gpus()[i], 0, &status) != AMDSMI_STATUS_SUCCESS)
+    if (amdsmi_get_gpu_power_profile_presets(gpus()[i], 0, &status) != AMDSMI_STATUS_SUCCESS)
       continue;
 
     // Pick a different available preset from the bitmask.
@@ -120,7 +118,7 @@ TEST(GpuFunctionalReadWrite, PowerProfile_SetVerifyRestore) {
 
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_power_profile",
                        "gpu=" + std::to_string(i) + " set=" + std::to_string(target), kVerbose);
-    amdsmi_status_t err = amdsmi_set_gpu_power_profile(dev.gpus()[i], 0, target);
+    amdsmi_status_t err = amdsmi_set_gpu_power_profile(gpus()[i], 0, target);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -131,7 +129,7 @@ TEST(GpuFunctionalReadWrite, PowerProfile_SetVerifyRestore) {
 
     if (err == AMDSMI_STATUS_SUCCESS) {
       amdsmi_power_profile_preset_masks_t restore = status.current;
-      amdsmi_status_t rerr = amdsmi_set_gpu_power_profile(dev.gpus()[i], 0, restore);
+      amdsmi_status_t rerr = amdsmi_set_gpu_power_profile(gpus()[i], 0, restore);
       DISPLAY_AMDSMI_API("amdsmi_set_gpu_power_profile",
                          "gpu=" + std::to_string(i) + " restore=" + std::to_string(restore),
                          kVerbose);

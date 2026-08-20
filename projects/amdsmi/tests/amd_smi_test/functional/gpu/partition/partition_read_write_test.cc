@@ -50,8 +50,8 @@ amdsmi_compute_partition_type_t CompStrToEnum(const std::string& s) {
 }  // namespace
 
 // amdsmi_get_gpu_memory_partition / amdsmi_set_gpu_memory_partition.
-TEST(GpuFunctionalReadWrite, SetMemoryPartition_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetMemoryPartition_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_memory_partition", "handle=invalid", kVerbose);
   amdsmi_status_t err =
       amdsmi_set_gpu_memory_partition(kInvalidHandle, AMDSMI_MEMORY_PARTITION_NPS1);
@@ -60,15 +60,14 @@ TEST(GpuFunctionalReadWrite, SetMemoryPartition_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, MemoryPartition_SetVerifyRestore) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadWrite, MemoryPartition_SetVerifyRestore) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_gpu_memory_partition");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     char buf[64];
     memset(buf, 0, sizeof(buf));
-    if (amdsmi_get_gpu_memory_partition(dev.gpus()[i], buf, sizeof(buf)) != AMDSMI_STATUS_SUCCESS)
+    if (amdsmi_get_gpu_memory_partition(gpus()[i], buf, sizeof(buf)) != AMDSMI_STATUS_SUCCESS)
       continue;
     std::string initial(buf);
     amdsmi_memory_partition_type_t initial_enum = MemStrToEnum(initial);
@@ -81,7 +80,7 @@ TEST(GpuFunctionalReadWrite, MemoryPartition_SetVerifyRestore) {
 
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_memory_partition",
                        "gpu=" + std::to_string(i) + " set=" + target, kVerbose);
-    amdsmi_status_t err = amdsmi_set_gpu_memory_partition(dev.gpus()[i], target_enum);
+    amdsmi_status_t err = amdsmi_set_gpu_memory_partition(gpus()[i], target_enum);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -93,18 +92,18 @@ TEST(GpuFunctionalReadWrite, MemoryPartition_SetVerifyRestore) {
     if (err == AMDSMI_STATUS_SUCCESS) {
       char readback[64];
       memset(readback, 0, sizeof(readback));
-      if (amdsmi_get_gpu_memory_partition(dev.gpus()[i], readback, sizeof(readback)) ==
+      if (amdsmi_get_gpu_memory_partition(gpus()[i], readback, sizeof(readback)) ==
           AMDSMI_STATUS_SUCCESS) {
         EXPECT_EQ(std::string(readback), target) << "gpu=" << i << " set did not take effect";
       }
-      amdsmi_status_t rerr = amdsmi_set_gpu_memory_partition(dev.gpus()[i], initial_enum);
+      amdsmi_status_t rerr = amdsmi_set_gpu_memory_partition(gpus()[i], initial_enum);
       DISPLAY_AMDSMI_API("amdsmi_set_gpu_memory_partition",
                          "gpu=" + std::to_string(i) + " restore=" + initial, kVerbose);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, rerr, AMDSMI_STATUS_SUCCESS);
       EXPECT_EQ(rerr, AMDSMI_STATUS_SUCCESS)
           << "gpu=" << i << " failed to restore memory partition";
       if (rerr == AMDSMI_STATUS_SUCCESS &&
-          amdsmi_get_gpu_memory_partition(dev.gpus()[i], readback, sizeof(readback)) ==
+          amdsmi_get_gpu_memory_partition(gpus()[i], readback, sizeof(readback)) ==
               AMDSMI_STATUS_SUCCESS) {
         EXPECT_EQ(std::string(readback), initial) << "gpu=" << i << " restore did not take effect";
       }
@@ -114,8 +113,8 @@ TEST(GpuFunctionalReadWrite, MemoryPartition_SetVerifyRestore) {
 }
 
 // amdsmi_get_gpu_compute_partition / amdsmi_set_gpu_compute_partition.
-TEST(GpuFunctionalReadWrite, SetComputePartition_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetComputePartition_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_compute_partition", "handle=invalid", kVerbose);
   amdsmi_status_t err =
       amdsmi_set_gpu_compute_partition(kInvalidHandle, AMDSMI_COMPUTE_PARTITION_SPX);
@@ -124,15 +123,14 @@ TEST(GpuFunctionalReadWrite, SetComputePartition_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, ComputePartition_SetVerifyRestore) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadWrite, ComputePartition_SetVerifyRestore) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_gpu_compute_partition");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     char buf[64];
     memset(buf, 0, sizeof(buf));
-    if (amdsmi_get_gpu_compute_partition(dev.gpus()[i], buf, sizeof(buf)) != AMDSMI_STATUS_SUCCESS)
+    if (amdsmi_get_gpu_compute_partition(gpus()[i], buf, sizeof(buf)) != AMDSMI_STATUS_SUCCESS)
       continue;
     std::string initial(buf);
     amdsmi_compute_partition_type_t initial_enum = CompStrToEnum(initial);
@@ -145,7 +143,7 @@ TEST(GpuFunctionalReadWrite, ComputePartition_SetVerifyRestore) {
 
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_compute_partition",
                        "gpu=" + std::to_string(i) + " set=" + target, kVerbose);
-    amdsmi_status_t err = amdsmi_set_gpu_compute_partition(dev.gpus()[i], target_enum);
+    amdsmi_status_t err = amdsmi_set_gpu_compute_partition(gpus()[i], target_enum);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -157,18 +155,18 @@ TEST(GpuFunctionalReadWrite, ComputePartition_SetVerifyRestore) {
     if (err == AMDSMI_STATUS_SUCCESS) {
       char readback[64];
       memset(readback, 0, sizeof(readback));
-      if (amdsmi_get_gpu_compute_partition(dev.gpus()[i], readback, sizeof(readback)) ==
+      if (amdsmi_get_gpu_compute_partition(gpus()[i], readback, sizeof(readback)) ==
           AMDSMI_STATUS_SUCCESS) {
         EXPECT_EQ(std::string(readback), target) << "gpu=" << i << " set did not take effect";
       }
-      amdsmi_status_t rerr = amdsmi_set_gpu_compute_partition(dev.gpus()[i], initial_enum);
+      amdsmi_status_t rerr = amdsmi_set_gpu_compute_partition(gpus()[i], initial_enum);
       DISPLAY_AMDSMI_API("amdsmi_set_gpu_compute_partition",
                          "gpu=" + std::to_string(i) + " restore=" + initial, kVerbose);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, rerr, AMDSMI_STATUS_SUCCESS);
       EXPECT_EQ(rerr, AMDSMI_STATUS_SUCCESS)
           << "gpu=" << i << " failed to restore compute partition";
       if (rerr == AMDSMI_STATUS_SUCCESS &&
-          amdsmi_get_gpu_compute_partition(dev.gpus()[i], readback, sizeof(readback)) ==
+          amdsmi_get_gpu_compute_partition(gpus()[i], readback, sizeof(readback)) ==
               AMDSMI_STATUS_SUCCESS) {
         EXPECT_EQ(std::string(readback), initial) << "gpu=" << i << " restore did not take effect";
       }

@@ -30,21 +30,19 @@ using amdsmi::unittest::kInvalidHandle;
 using amdsmi::unittest::kVerbose;
 
 // CPU floor-frequency, effective-floor, MSR-floor and SDPS limit APIs. Core
-// variants derive a core index from the handle (dev.cpu_cores()); socket variants
-// use dev.cpus(). Write APIs guard only the handle, so they omit the null-output
+// variants derive a core index from the handle (cpu_cores()); socket variants
+// use cpus(). Write APIs guard only the handle, so they omit the null-output
 // test and restore benign values in the valid path.
 
 // ---- amdsmi_get_cpu_core_floor_freq_limit (output guarded, core handle) ----
-TEST(CpuUnit, GetCoreFloorFreqLimit_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
+TEST_F(CpuUnit, GetCoreFloorFreqLimit_NullOutput) {
+  if (cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_core_floor_freq_limit", "out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_core_floor_freq_limit(dev.cpu_cores()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_core_floor_freq_limit(cpu_cores()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetCoreFloorFreqLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCoreFloorFreqLimit_InvalidHandle) {
   uint32_t floor = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_core_floor_freq_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_core_floor_freq_limit(kInvalidHandle, &floor);
@@ -52,15 +50,14 @@ TEST(CpuUnit, GetCoreFloorFreqLimit_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetCoreFloorFreqLimit_AllCores) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCoreFloorFreqLimit_AllCores) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_core_floor_freq_limit");
-  if (dev.cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
-  for (size_t i = 0; i < dev.cpu_cores().size(); ++i) {
+  if (cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
+  for (size_t i = 0; i < cpu_cores().size(); ++i) {
     uint32_t floor = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_core_floor_freq_limit", "core=" + std::to_string(i),
                        kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_core_floor_freq_limit(dev.cpu_cores()[i], &floor);
+    amdsmi_status_t err = amdsmi_get_cpu_core_floor_freq_limit(cpu_cores()[i], &floor);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("core=" + std::to_string(i), err,
@@ -72,16 +69,14 @@ TEST(CpuUnit, GetCoreFloorFreqLimit_AllCores) {
 }
 
 // ---- amdsmi_get_cpu_floor_freq_limit (output guarded, socket) ----
-TEST(CpuUnit, GetFloorFreqLimit_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetFloorFreqLimit_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_floor_freq_limit", "out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_floor_freq_limit(dev.cpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_floor_freq_limit(cpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetFloorFreqLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetFloorFreqLimit_InvalidHandle) {
   uint32_t floor = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_floor_freq_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_floor_freq_limit(kInvalidHandle, &floor);
@@ -89,14 +84,13 @@ TEST(CpuUnit, GetFloorFreqLimit_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetFloorFreqLimit_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetFloorFreqLimit_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_floor_freq_limit");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint32_t floor = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_floor_freq_limit", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_floor_freq_limit(dev.cpus()[i], &floor);
+    amdsmi_status_t err = amdsmi_get_cpu_floor_freq_limit(cpus()[i], &floor);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -108,16 +102,14 @@ TEST(CpuUnit, GetFloorFreqLimit_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_core_eff_floor_freq_limit (output guarded, core handle) ----
-TEST(CpuUnit, GetCoreEffFloorFreqLimit_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
+TEST_F(CpuUnit, GetCoreEffFloorFreqLimit_NullOutput) {
+  if (cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_core_eff_floor_freq_limit", "out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_core_eff_floor_freq_limit(dev.cpu_cores()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_core_eff_floor_freq_limit(cpu_cores()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetCoreEffFloorFreqLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCoreEffFloorFreqLimit_InvalidHandle) {
   uint32_t eff = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_core_eff_floor_freq_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_core_eff_floor_freq_limit(kInvalidHandle, &eff);
@@ -125,15 +117,14 @@ TEST(CpuUnit, GetCoreEffFloorFreqLimit_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetCoreEffFloorFreqLimit_AllCores) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCoreEffFloorFreqLimit_AllCores) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_core_eff_floor_freq_limit");
-  if (dev.cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
-  for (size_t i = 0; i < dev.cpu_cores().size(); ++i) {
+  if (cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
+  for (size_t i = 0; i < cpu_cores().size(); ++i) {
     uint32_t eff = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_core_eff_floor_freq_limit", "core=" + std::to_string(i),
                        kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_core_eff_floor_freq_limit(dev.cpu_cores()[i], &eff);
+    amdsmi_status_t err = amdsmi_get_cpu_core_eff_floor_freq_limit(cpu_cores()[i], &eff);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("core=" + std::to_string(i), err,
@@ -145,16 +136,14 @@ TEST(CpuUnit, GetCoreEffFloorFreqLimit_AllCores) {
 }
 
 // ---- amdsmi_get_cpu_eff_floor_freq_limit (output guarded, socket) ----
-TEST(CpuUnit, GetEffFloorFreqLimit_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetEffFloorFreqLimit_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_eff_floor_freq_limit", "out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_eff_floor_freq_limit(dev.cpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_eff_floor_freq_limit(cpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetEffFloorFreqLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetEffFloorFreqLimit_InvalidHandle) {
   uint32_t eff = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_eff_floor_freq_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_eff_floor_freq_limit(kInvalidHandle, &eff);
@@ -162,14 +151,13 @@ TEST(CpuUnit, GetEffFloorFreqLimit_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetEffFloorFreqLimit_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetEffFloorFreqLimit_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_eff_floor_freq_limit");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint32_t eff = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_eff_floor_freq_limit", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_eff_floor_freq_limit(dev.cpus()[i], &eff);
+    amdsmi_status_t err = amdsmi_get_cpu_eff_floor_freq_limit(cpus()[i], &eff);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -181,16 +169,14 @@ TEST(CpuUnit, GetEffFloorFreqLimit_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_sdps_limit (output guarded, socket) ----
-TEST(CpuUnit, GetSdpsLimit_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetSdpsLimit_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_sdps_limit", "out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_sdps_limit(dev.cpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_sdps_limit(cpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetSdpsLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSdpsLimit_InvalidHandle) {
   uint32_t sdps = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_sdps_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_sdps_limit(kInvalidHandle, &sdps);
@@ -198,14 +184,13 @@ TEST(CpuUnit, GetSdpsLimit_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetSdpsLimit_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSdpsLimit_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_sdps_limit");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint32_t sdps = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_sdps_limit", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_sdps_limit(dev.cpus()[i], &sdps);
+    amdsmi_status_t err = amdsmi_get_cpu_sdps_limit(cpus()[i], &sdps);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -217,23 +202,21 @@ TEST(CpuUnit, GetSdpsLimit_AllCpus) {
 }
 
 // ---- write APIs (handle guarded only); restore benign values ----
-TEST(CpuUnit, SetCoreFloorFreqLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetCoreFloorFreqLimit_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_core_floor_freq_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_core_floor_freq_limit(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, SetCoreFloorFreqLimit_AllCores) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
+TEST_F(CpuUnit, SetCoreFloorFreqLimit_AllCores) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_cpu_core_floor_freq_limit");
-  if (dev.cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
-  for (size_t i = 0; i < dev.cpu_cores().size(); ++i) {
+  if (cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
+  for (size_t i = 0; i < cpu_cores().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_set_cpu_core_floor_freq_limit", "core=" + std::to_string(i),
                        kVerbose);
-    amdsmi_status_t err = amdsmi_set_cpu_core_floor_freq_limit(dev.cpu_cores()[i], 0);
+    amdsmi_status_t err = amdsmi_set_cpu_core_floor_freq_limit(cpu_cores()[i], 0);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_NO_HSMP_MSG_SUP);
@@ -245,22 +228,20 @@ TEST(CpuUnit, SetCoreFloorFreqLimit_AllCores) {
   }
   amdsmi_col.ExpectNoFailures();
 }
-TEST(CpuUnit, SetFloorFreqLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetFloorFreqLimit_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_floor_freq_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_floor_freq_limit(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, SetFloorFreqLimit_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
+TEST_F(CpuUnit, SetFloorFreqLimit_AllCpus) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_cpu_floor_freq_limit");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_set_cpu_floor_freq_limit", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_set_cpu_floor_freq_limit(dev.cpus()[i], 0);
+    amdsmi_status_t err = amdsmi_set_cpu_floor_freq_limit(cpus()[i], 0);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_NO_HSMP_MSG_SUP);
@@ -272,22 +253,20 @@ TEST(CpuUnit, SetFloorFreqLimit_AllCpus) {
   }
   amdsmi_col.ExpectNoFailures();
 }
-TEST(CpuUnit, SetMsrFloorFreqLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetMsrFloorFreqLimit_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_msr_floor_freq_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_msr_floor_freq_limit(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, SetMsrFloorFreqLimit_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
+TEST_F(CpuUnit, SetMsrFloorFreqLimit_AllCpus) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_cpu_msr_floor_freq_limit");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_set_cpu_msr_floor_freq_limit", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_set_cpu_msr_floor_freq_limit(dev.cpus()[i], 0);
+    amdsmi_status_t err = amdsmi_set_cpu_msr_floor_freq_limit(cpus()[i], 0);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_NO_HSMP_MSG_SUP);
@@ -299,23 +278,21 @@ TEST(CpuUnit, SetMsrFloorFreqLimit_AllCpus) {
   }
   amdsmi_col.ExpectNoFailures();
 }
-TEST(CpuUnit, SetCoreMsrFloorFreqLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetCoreMsrFloorFreqLimit_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_core_msr_floor_freq_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_core_msr_floor_freq_limit(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, SetCoreMsrFloorFreqLimit_AllCores) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
+TEST_F(CpuUnit, SetCoreMsrFloorFreqLimit_AllCores) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_cpu_core_msr_floor_freq_limit");
-  if (dev.cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
-  for (size_t i = 0; i < dev.cpu_cores().size(); ++i) {
+  if (cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
+  for (size_t i = 0; i < cpu_cores().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_set_cpu_core_msr_floor_freq_limit", "core=" + std::to_string(i),
                        kVerbose);
-    amdsmi_status_t err = amdsmi_set_cpu_core_msr_floor_freq_limit(dev.cpu_cores()[i], 0);
+    amdsmi_status_t err = amdsmi_set_cpu_core_msr_floor_freq_limit(cpu_cores()[i], 0);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_NO_HSMP_MSG_SUP);
@@ -327,24 +304,22 @@ TEST(CpuUnit, SetCoreMsrFloorFreqLimit_AllCores) {
   }
   amdsmi_col.ExpectNoFailures();
 }
-TEST(CpuUnit, SetSdpsLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetSdpsLimit_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_sdps_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_sdps_limit(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, SetSdpsLimit_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetSdpsLimit_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_cpu_sdps_limit");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint32_t sdps = 0;
-    if (amdsmi_get_cpu_sdps_limit(dev.cpus()[i], &sdps) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_cpu_sdps_limit(cpus()[i], &sdps) != AMDSMI_STATUS_SUCCESS) continue;
     DISPLAY_AMDSMI_API("amdsmi_set_cpu_sdps_limit",
                        "cpu=" + std::to_string(i) + " sdps=" + std::to_string(sdps), kVerbose);
-    amdsmi_status_t err = amdsmi_set_cpu_sdps_limit(dev.cpus()[i], sdps);
+    amdsmi_status_t err = amdsmi_set_cpu_sdps_limit(cpus()[i], sdps);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_NO_HSMP_MSG_SUP);

@@ -36,8 +36,8 @@ static constexpr amdsmi_event_group_t kGroup = AMDSMI_EVNT_GRP_XGMI;
 static constexpr amdsmi_event_type_t kEvent = AMDSMI_EVNT_XGMI_0_NOP_TX;
 
 // ---------------- invalid parameters first ----------------
-TEST(GpuFunctionalReadOnly, CounterGroupSupported_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadOnly, CounterGroupSupported_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_gpu_counter_group_supported", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_gpu_counter_group_supported(kInvalidHandle, kGroup);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -45,18 +45,17 @@ TEST(GpuFunctionalReadOnly, CounterGroupSupported_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadOnly, GetAvailableCounters_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadOnly, GetAvailableCounters_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_available_counters", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_available_counters(dev.gpus()[0], kGroup, nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_available_counters(gpus()[0], kGroup, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
 
-TEST(GpuFunctionalReadOnly, GetAvailableCounters_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadOnly, GetAvailableCounters_InvalidHandle) {
+  RequireInit();
   uint32_t available = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_available_counters", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_gpu_available_counters(kInvalidHandle, kGroup, &available);
@@ -65,18 +64,17 @@ TEST(GpuFunctionalReadOnly, GetAvailableCounters_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadOnly, CreateCounter_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadOnly, CreateCounter_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_gpu_create_counter", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_gpu_create_counter(dev.gpus()[0], kEvent, nullptr);
+  amdsmi_status_t err = amdsmi_gpu_create_counter(gpus()[0], kEvent, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
 
-TEST(GpuFunctionalReadOnly, CreateCounter_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadOnly, CreateCounter_InvalidHandle) {
+  RequireInit();
   amdsmi_event_handle_t evt = 0;
   DISPLAY_AMDSMI_API("amdsmi_gpu_create_counter", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_gpu_create_counter(kInvalidHandle, kEvent, &evt);
@@ -85,8 +83,8 @@ TEST(GpuFunctionalReadOnly, CreateCounter_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadOnly, ReadCounter_NullValue) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadOnly, ReadCounter_NullValue) {
+  RequireInit();
   amdsmi_event_handle_t evt = 0;
   DISPLAY_AMDSMI_API("amdsmi_gpu_read_counter", "value=nullptr", kVerbose);
   amdsmi_status_t err = amdsmi_gpu_read_counter(evt, nullptr);
@@ -96,27 +94,25 @@ TEST(GpuFunctionalReadOnly, ReadCounter_NullValue) {
 }
 
 // Valid-handle path is exercised in Counter_LifecycleWorkflow below.
-TEST(GpuFunctionalReadOnly, ControlCounter_InvalidHandle) {
+TEST_F(GpuFunctionalReadOnly, ControlCounter_InvalidHandle) {
   GTEST_SKIP() << "amdsmi_gpu_control_counter crashes on an invalid handle; "
                   "proper return should be AMDSMI_STATUS_INVAL";
-  amdsmi::unittest::UnitDevices dev;
 }
 
 // ---------------- full counter lifecycle: create -> start -> read -> stop -> destroy
 // ---------------- Perf counters only monitor (no device-config change) and destroy() releases
 // exactly what create() allocated, so this is not gated behind the mutation flag.
-TEST(GpuFunctionalReadOnly, Counter_LifecycleWorkflow) {
+TEST_F(GpuFunctionalReadOnly, Counter_LifecycleWorkflow) {
   GTEST_SKIP() << "counter lifecycle returns AMDSMI_STATUS_UNEXPECTED_SIZE; root cause unknown, "
                   "under investigation";
 
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_gpu_counter_lifecycle");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     const std::string g = "gpu=" + std::to_string(i);
 
     DISPLAY_AMDSMI_API("amdsmi_gpu_counter_group_supported", g + " grp=XGMI", kVerbose);
-    amdsmi_status_t serr = amdsmi_gpu_counter_group_supported(dev.gpus()[i], kGroup);
+    amdsmi_status_t serr = amdsmi_gpu_counter_group_supported(gpus()[i], kGroup);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, serr, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     col.Record(g + " group_supported", serr,
@@ -126,7 +122,7 @@ TEST(GpuFunctionalReadOnly, Counter_LifecycleWorkflow) {
 
     uint32_t available = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_available_counters", g + " grp=XGMI", kVerbose);
-    amdsmi_status_t aerr = amdsmi_get_gpu_available_counters(dev.gpus()[i], kGroup, &available);
+    amdsmi_status_t aerr = amdsmi_get_gpu_available_counters(gpus()[i], kGroup, &available);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, aerr, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     col.Record(g + " available_counters", aerr,
@@ -136,7 +132,7 @@ TEST(GpuFunctionalReadOnly, Counter_LifecycleWorkflow) {
 
     amdsmi_event_handle_t handle = 0;
     DISPLAY_AMDSMI_API("amdsmi_gpu_create_counter", g + " evt=XGMI_0_NOP_TX", kVerbose);
-    amdsmi_status_t cerr = amdsmi_gpu_create_counter(dev.gpus()[i], kEvent, &handle);
+    amdsmi_status_t cerr = amdsmi_gpu_create_counter(gpus()[i], kEvent, &handle);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, cerr, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);

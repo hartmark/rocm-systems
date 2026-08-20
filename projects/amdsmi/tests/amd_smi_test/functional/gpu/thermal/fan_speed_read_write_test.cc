@@ -29,8 +29,8 @@ using amdsmi::unittest::kInvalidHandle;
 using amdsmi::unittest::kVerbose;
 
 // amdsmi_get_gpu_fan_speed / amdsmi_set_gpu_fan_speed (sensor 0).
-TEST(GpuFunctionalReadWrite, SetFanSpeed_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetFanSpeed_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_fan_speed", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_gpu_fan_speed(kInvalidHandle, 0, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -38,18 +38,16 @@ TEST(GpuFunctionalReadWrite, SetFanSpeed_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, FanSpeed_SetVerifyRestore) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadWrite, FanSpeed_SetVerifyRestore) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_gpu_fan_speed");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     int64_t initial = 0;
-    if (amdsmi_get_gpu_fan_speed(dev.gpus()[i], 0, &initial) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_gpu_fan_speed(gpus()[i], 0, &initial) != AMDSMI_STATUS_SUCCESS) continue;
 
     uint64_t max_speed = 0;
-    if (amdsmi_get_gpu_fan_speed_max(dev.gpus()[i], 0, &max_speed) != AMDSMI_STATUS_SUCCESS)
-      continue;
+    if (amdsmi_get_gpu_fan_speed_max(gpus()[i], 0, &max_speed) != AMDSMI_STATUS_SUCCESS) continue;
     if (max_speed == 0) continue;
 
     uint64_t target = (static_cast<uint64_t>(initial) == 0) ? (max_speed / 2) : 0;
@@ -57,7 +55,7 @@ TEST(GpuFunctionalReadWrite, FanSpeed_SetVerifyRestore) {
 
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_fan_speed",
                        "gpu=" + std::to_string(i) + " set=" + std::to_string(target), kVerbose);
-    amdsmi_status_t err = amdsmi_set_gpu_fan_speed(dev.gpus()[i], 0, target);
+    amdsmi_status_t err = amdsmi_set_gpu_fan_speed(gpus()[i], 0, target);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -68,27 +66,26 @@ TEST(GpuFunctionalReadWrite, FanSpeed_SetVerifyRestore) {
 
     if (err == AMDSMI_STATUS_SUCCESS) {
       int64_t readback = 0;
-      if (amdsmi_get_gpu_fan_speed(dev.gpus()[i], 0, &readback) == AMDSMI_STATUS_SUCCESS) {
+      if (amdsmi_get_gpu_fan_speed(gpus()[i], 0, &readback) == AMDSMI_STATUS_SUCCESS) {
         EXPECT_EQ(static_cast<uint64_t>(readback), target)
             << "gpu=" << i << " set did not take effect";
       }
-      amdsmi_status_t rerr =
-          amdsmi_set_gpu_fan_speed(dev.gpus()[i], 0, static_cast<uint64_t>(initial));
+      amdsmi_status_t rerr = amdsmi_set_gpu_fan_speed(gpus()[i], 0, static_cast<uint64_t>(initial));
       DISPLAY_AMDSMI_API("amdsmi_set_gpu_fan_speed",
                          "gpu=" + std::to_string(i) + " restore=" + std::to_string(initial),
                          kVerbose);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, rerr, AMDSMI_STATUS_SUCCESS);
       EXPECT_EQ(rerr, AMDSMI_STATUS_SUCCESS) << "gpu=" << i << " failed to restore fan speed";
       if (rerr == AMDSMI_STATUS_SUCCESS &&
-          amdsmi_get_gpu_fan_speed(dev.gpus()[i], 0, &readback) == AMDSMI_STATUS_SUCCESS) {
+          amdsmi_get_gpu_fan_speed(gpus()[i], 0, &readback) == AMDSMI_STATUS_SUCCESS) {
         EXPECT_EQ(readback, initial) << "gpu=" << i << " restore did not take effect";
       }
     }
   }
   // Return every fan to automatic control.
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_reset_gpu_fan", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t rerr = amdsmi_reset_gpu_fan(dev.gpus()[i], 0);
+    amdsmi_status_t rerr = amdsmi_reset_gpu_fan(gpus()[i], 0);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, rerr, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);

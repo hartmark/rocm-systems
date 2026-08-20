@@ -41,8 +41,7 @@ constexpr uint8_t kNbioIds[] = {0, 1, 2, 3};
 }  // namespace
 
 // ---- amdsmi_set_cpu_xgmi_width (invalid-handle only; live write is unsafe) ----
-TEST(CpuUnit, SetXgmiWidth_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetXgmiWidth_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_xgmi_width", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_xgmi_width(kInvalidHandle, 0, 2);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -51,8 +50,7 @@ TEST(CpuUnit, SetXgmiWidth_InvalidHandle) {
 }
 
 // ---- amdsmi_set_cpu_gmi3_link_width_range (invalid-handle only) ----
-TEST(CpuUnit, SetGmi3LinkWidthRange_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetGmi3LinkWidthRange_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_gmi3_link_width_range", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_gmi3_link_width_range(kInvalidHandle, 0, 2);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -61,16 +59,14 @@ TEST(CpuUnit, SetGmi3LinkWidthRange_InvalidHandle) {
 }
 
 // ---- amdsmi_cpu_apb_enable / amdsmi_cpu_apb_disable (invalid-handle only) ----
-TEST(CpuUnit, ApbEnable_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, ApbEnable_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_cpu_apb_enable", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_cpu_apb_enable(kInvalidHandle);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, ApbDisable_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, ApbDisable_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_cpu_apb_disable", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_cpu_apb_disable(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -79,8 +75,7 @@ TEST(CpuUnit, ApbDisable_InvalidHandle) {
 }
 
 // ---- amdsmi_set_cpu_socket_lclk_dpm_level (invalid-handle only) ----
-TEST(CpuUnit, SetSocketLclkDpmLevel_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetSocketLclkDpmLevel_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_socket_lclk_dpm_level", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_socket_lclk_dpm_level(kInvalidHandle, 0, 0, 1);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -89,8 +84,7 @@ TEST(CpuUnit, SetSocketLclkDpmLevel_InvalidHandle) {
 }
 
 // ---- amdsmi_get_cpu_socket_lclk_dpm_level (handle guarded only) ----
-TEST(CpuUnit, GetSocketLclkDpmLevel_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSocketLclkDpmLevel_InvalidHandle) {
   amdsmi_dpm_level_t nbio;
   memset(&nbio, 0, sizeof(nbio));
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_socket_lclk_dpm_level", "handle=invalid", kVerbose);
@@ -99,17 +93,16 @@ TEST(CpuUnit, GetSocketLclkDpmLevel_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetSocketLclkDpmLevel_AllCpusAllNbio) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSocketLclkDpmLevel_AllCpusAllNbio) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_socket_lclk_dpm_level");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i)
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i)
     for (auto nbio_id : kNbioIds) {
       amdsmi_dpm_level_t nbio;
       memset(&nbio, 0, sizeof(nbio));
       DISPLAY_AMDSMI_API("amdsmi_get_cpu_socket_lclk_dpm_level",
                          "cpu=" + std::to_string(i) + " nbio=" + std::to_string(nbio_id), kVerbose);
-      amdsmi_status_t err = amdsmi_get_cpu_socket_lclk_dpm_level(dev.cpus()[i], nbio_id, &nbio);
+      amdsmi_status_t err = amdsmi_get_cpu_socket_lclk_dpm_level(cpus()[i], nbio_id, &nbio);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("cpu=" + std::to_string(i) + " nbio=" + std::to_string(nbio_id), err,
@@ -121,8 +114,7 @@ TEST(CpuUnit, GetSocketLclkDpmLevel_AllCpusAllNbio) {
 }
 
 // ---- amdsmi_set_cpu_pcie_link_rate (invalid-handle only) ----
-TEST(CpuUnit, SetPcieLinkRate_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetPcieLinkRate_InvalidHandle) {
   uint8_t prev_mode = 0;
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_pcie_link_rate", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_pcie_link_rate(kInvalidHandle, 0, &prev_mode);
@@ -132,8 +124,7 @@ TEST(CpuUnit, SetPcieLinkRate_InvalidHandle) {
 }
 
 // ---- amdsmi_set_cpu_df_pstate_range (invalid-handle only) ----
-TEST(CpuUnit, SetDfPstateRange_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetDfPstateRange_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_df_pstate_range", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_df_pstate_range(kInvalidHandle, 0, 2);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -142,8 +133,7 @@ TEST(CpuUnit, SetDfPstateRange_InvalidHandle) {
 }
 
 // ---- amdsmi_set_cpu_xgmi_pstate_range (invalid-handle only) ----
-TEST(CpuUnit, SetXgmiPstateRange_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetXgmiPstateRange_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_xgmi_pstate_range", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_xgmi_pstate_range(kInvalidHandle, 0, 2);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -152,17 +142,15 @@ TEST(CpuUnit, SetXgmiPstateRange_InvalidHandle) {
 }
 
 // ---- amdsmi_get_cpu_xgmi_pstate_range (outputs guarded) ----
-TEST(CpuUnit, GetXgmiPstateRange_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetXgmiPstateRange_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   uint8_t max_pstate = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_xgmi_pstate_range", "min_pstate=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_xgmi_pstate_range(dev.cpus()[0], nullptr, &max_pstate);
+  amdsmi_status_t err = amdsmi_get_cpu_xgmi_pstate_range(cpus()[0], nullptr, &max_pstate);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetXgmiPstateRange_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetXgmiPstateRange_InvalidHandle) {
   uint8_t min_pstate = 0, max_pstate = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_xgmi_pstate_range", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_xgmi_pstate_range(kInvalidHandle, &min_pstate, &max_pstate);
@@ -170,14 +158,13 @@ TEST(CpuUnit, GetXgmiPstateRange_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetXgmiPstateRange_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetXgmiPstateRange_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_xgmi_pstate_range");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint8_t min_pstate = 0, max_pstate = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_xgmi_pstate_range", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_xgmi_pstate_range(dev.cpus()[i], &min_pstate, &max_pstate);
+    amdsmi_status_t err = amdsmi_get_cpu_xgmi_pstate_range(cpus()[i], &min_pstate, &max_pstate);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -189,16 +176,14 @@ TEST(CpuUnit, GetXgmiPstateRange_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_pc6_enable (output guarded) ----
-TEST(CpuUnit, GetPc6Enable_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetPc6Enable_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_pc6_enable", "out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_pc6_enable(dev.cpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_pc6_enable(cpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetPc6Enable_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetPc6Enable_InvalidHandle) {
   uint8_t enabled = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_pc6_enable", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_pc6_enable(kInvalidHandle, &enabled);
@@ -206,14 +191,13 @@ TEST(CpuUnit, GetPc6Enable_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetPc6Enable_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetPc6Enable_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_pc6_enable");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint8_t enabled = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_pc6_enable", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_pc6_enable(dev.cpus()[i], &enabled);
+    amdsmi_status_t err = amdsmi_get_cpu_pc6_enable(cpus()[i], &enabled);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -225,24 +209,22 @@ TEST(CpuUnit, GetPc6Enable_AllCpus) {
 }
 
 // ---- amdsmi_set_cpu_pc6_enable (write; restores current value) ----
-TEST(CpuUnit, SetPc6Enable_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetPc6Enable_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_pc6_enable", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_pc6_enable(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, SetPc6Enable_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetPc6Enable_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_cpu_pc6_enable");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint8_t enabled = 0;
-    if (amdsmi_get_cpu_pc6_enable(dev.cpus()[i], &enabled) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_cpu_pc6_enable(cpus()[i], &enabled) != AMDSMI_STATUS_SUCCESS) continue;
     DISPLAY_AMDSMI_API("amdsmi_set_cpu_pc6_enable",
                        "cpu=" + std::to_string(i) + " enable=" + std::to_string(enabled), kVerbose);
-    amdsmi_status_t err = amdsmi_set_cpu_pc6_enable(dev.cpus()[i], enabled);
+    amdsmi_status_t err = amdsmi_set_cpu_pc6_enable(cpus()[i], enabled);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_NO_HSMP_MSG_SUP);
@@ -256,16 +238,14 @@ TEST(CpuUnit, SetPc6Enable_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_cc6_enable (output guarded) ----
-TEST(CpuUnit, GetCc6Enable_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetCc6Enable_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_cc6_enable", "out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_cc6_enable(dev.cpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_cc6_enable(cpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetCc6Enable_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCc6Enable_InvalidHandle) {
   uint8_t enabled = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_cc6_enable", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_cc6_enable(kInvalidHandle, &enabled);
@@ -273,14 +253,13 @@ TEST(CpuUnit, GetCc6Enable_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetCc6Enable_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCc6Enable_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_cc6_enable");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint8_t enabled = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_cc6_enable", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_cc6_enable(dev.cpus()[i], &enabled);
+    amdsmi_status_t err = amdsmi_get_cpu_cc6_enable(cpus()[i], &enabled);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -292,24 +271,22 @@ TEST(CpuUnit, GetCc6Enable_AllCpus) {
 }
 
 // ---- amdsmi_set_cpu_cc6_enable (write; restores current value) ----
-TEST(CpuUnit, SetCc6Enable_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetCc6Enable_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_cc6_enable", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_cc6_enable(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, SetCc6Enable_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetCc6Enable_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_cpu_cc6_enable");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint8_t enabled = 0;
-    if (amdsmi_get_cpu_cc6_enable(dev.cpus()[i], &enabled) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_cpu_cc6_enable(cpus()[i], &enabled) != AMDSMI_STATUS_SUCCESS) continue;
     DISPLAY_AMDSMI_API("amdsmi_set_cpu_cc6_enable",
                        "cpu=" + std::to_string(i) + " enable=" + std::to_string(enabled), kVerbose);
-    amdsmi_status_t err = amdsmi_set_cpu_cc6_enable(dev.cpus()[i], enabled);
+    amdsmi_status_t err = amdsmi_set_cpu_cc6_enable(cpus()[i], enabled);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_NO_HSMP_MSG_SUP);
@@ -323,8 +300,7 @@ TEST(CpuUnit, SetCc6Enable_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_current_io_bandwidth (handle guarded only; loops bw type) ----
-TEST(CpuUnit, GetCurrentIoBandwidth_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCurrentIoBandwidth_InvalidHandle) {
   amdsmi_link_id_bw_type_t link;
   memset(&link, 0, sizeof(link));
   char lname[] = "G0";
@@ -337,11 +313,10 @@ TEST(CpuUnit, GetCurrentIoBandwidth_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetCurrentIoBandwidth_AllCpusAllBwTypes) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCurrentIoBandwidth_AllCpusAllBwTypes) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_current_io_bandwidth");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i)
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i)
     for (auto bw_type : kBwTypes) {
       amdsmi_link_id_bw_type_t link;
       memset(&link, 0, sizeof(link));
@@ -352,7 +327,7 @@ TEST(CpuUnit, GetCurrentIoBandwidth_AllCpusAllBwTypes) {
       DISPLAY_AMDSMI_API("amdsmi_get_cpu_current_io_bandwidth",
                          "cpu=" + std::to_string(i) + " bw_type=" + std::to_string(bw_type),
                          kVerbose);
-      amdsmi_status_t err = amdsmi_get_cpu_current_io_bandwidth(dev.cpus()[i], link, &io_bw);
+      amdsmi_status_t err = amdsmi_get_cpu_current_io_bandwidth(cpus()[i], link, &io_bw);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("cpu=" + std::to_string(i) + " bw_type=" + std::to_string(bw_type), err,
@@ -364,8 +339,7 @@ TEST(CpuUnit, GetCurrentIoBandwidth_AllCpusAllBwTypes) {
 }
 
 // ---- amdsmi_get_cpu_current_xgmi_bw (handle guarded only; loops bw type) ----
-TEST(CpuUnit, GetCurrentXgmiBw_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCurrentXgmiBw_InvalidHandle) {
   amdsmi_link_id_bw_type_t link;
   memset(&link, 0, sizeof(link));
   char lname[] = "P0";
@@ -378,11 +352,10 @@ TEST(CpuUnit, GetCurrentXgmiBw_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetCurrentXgmiBw_AllCpusAllBwTypes) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCurrentXgmiBw_AllCpusAllBwTypes) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_current_xgmi_bw");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i)
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i)
     for (auto bw_type : kBwTypes) {
       amdsmi_link_id_bw_type_t link;
       memset(&link, 0, sizeof(link));
@@ -393,7 +366,7 @@ TEST(CpuUnit, GetCurrentXgmiBw_AllCpusAllBwTypes) {
       DISPLAY_AMDSMI_API("amdsmi_get_cpu_current_xgmi_bw",
                          "cpu=" + std::to_string(i) + " bw_type=" + std::to_string(bw_type),
                          kVerbose);
-      amdsmi_status_t err = amdsmi_get_cpu_current_xgmi_bw(dev.cpus()[i], link, &xgmi_bw);
+      amdsmi_status_t err = amdsmi_get_cpu_current_xgmi_bw(cpus()[i], link, &xgmi_bw);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
       amdsmi_col.Record("cpu=" + std::to_string(i) + " bw_type=" + std::to_string(bw_type), err,

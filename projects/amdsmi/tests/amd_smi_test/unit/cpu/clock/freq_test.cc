@@ -32,11 +32,10 @@ using amdsmi::unittest::kVerbose;
 // CPU frequency, active-limit, rail iso-frequency and DFC control APIs. Getters
 // that only guard the handle omit the null-output test to avoid dereferencing a
 // null pointer on success. The core current-frequency limit derives a core
-// index from the handle and therefore iterates dev.cpu_cores().
+// index from the handle and therefore iterates cpu_cores().
 
 // ---- amdsmi_get_cpu_fclk_mclk (handle guarded only) ----
-TEST(CpuUnit, GetFclkMclk_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetFclkMclk_InvalidHandle) {
   uint32_t fclk = 0, mclk = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_fclk_mclk", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_fclk_mclk(kInvalidHandle, &fclk, &mclk);
@@ -44,14 +43,13 @@ TEST(CpuUnit, GetFclkMclk_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetFclkMclk_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetFclkMclk_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_fclk_mclk");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint32_t fclk = 0, mclk = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_fclk_mclk", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_fclk_mclk(dev.cpus()[i], &fclk, &mclk);
+    amdsmi_status_t err = amdsmi_get_cpu_fclk_mclk(cpus()[i], &fclk, &mclk);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -63,8 +61,7 @@ TEST(CpuUnit, GetFclkMclk_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_cclk_limit (handle guarded only) ----
-TEST(CpuUnit, GetCclkLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCclkLimit_InvalidHandle) {
   uint32_t cclk = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_cclk_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_cclk_limit(kInvalidHandle, &cclk);
@@ -72,14 +69,13 @@ TEST(CpuUnit, GetCclkLimit_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetCclkLimit_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCclkLimit_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_cclk_limit");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint32_t cclk = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_cclk_limit", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_cclk_limit(dev.cpus()[i], &cclk);
+    amdsmi_status_t err = amdsmi_get_cpu_cclk_limit(cpus()[i], &cclk);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -91,8 +87,7 @@ TEST(CpuUnit, GetCclkLimit_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_socket_current_active_freq_limit (handle guarded only) ----
-TEST(CpuUnit, GetSocketActiveFreqLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSocketActiveFreqLimit_InvalidHandle) {
   uint16_t freq = 0;
   char* src_type = nullptr;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_socket_current_active_freq_limit", "handle=invalid", kVerbose);
@@ -102,17 +97,16 @@ TEST(CpuUnit, GetSocketActiveFreqLimit_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetSocketActiveFreqLimit_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSocketActiveFreqLimit_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_socket_current_active_freq_limit");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint16_t freq = 0;
     char* src_type = nullptr;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_socket_current_active_freq_limit",
                        "cpu=" + std::to_string(i), kVerbose);
     amdsmi_status_t err =
-        amdsmi_get_cpu_socket_current_active_freq_limit(dev.cpus()[i], &freq, &src_type);
+        amdsmi_get_cpu_socket_current_active_freq_limit(cpus()[i], &freq, &src_type);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -124,8 +118,7 @@ TEST(CpuUnit, GetSocketActiveFreqLimit_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_socket_freq_range (handle guarded only) ----
-TEST(CpuUnit, GetSocketFreqRange_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSocketFreqRange_InvalidHandle) {
   uint16_t fmax = 0, fmin = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_socket_freq_range", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_socket_freq_range(kInvalidHandle, &fmax, &fmin);
@@ -133,14 +126,13 @@ TEST(CpuUnit, GetSocketFreqRange_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetSocketFreqRange_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetSocketFreqRange_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_socket_freq_range");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint16_t fmax = 0, fmin = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_socket_freq_range", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_socket_freq_range(dev.cpus()[i], &fmax, &fmin);
+    amdsmi_status_t err = amdsmi_get_cpu_socket_freq_range(cpus()[i], &fmax, &fmin);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -152,8 +144,7 @@ TEST(CpuUnit, GetSocketFreqRange_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_core_current_freq_limit (handle guarded only, core handle) ----
-TEST(CpuUnit, GetCoreCurrentFreqLimit_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCoreCurrentFreqLimit_InvalidHandle) {
   uint32_t freq = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_core_current_freq_limit", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_core_current_freq_limit(kInvalidHandle, &freq);
@@ -161,15 +152,14 @@ TEST(CpuUnit, GetCoreCurrentFreqLimit_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetCoreCurrentFreqLimit_AllCores) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetCoreCurrentFreqLimit_AllCores) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_core_current_freq_limit");
-  if (dev.cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
-  for (size_t i = 0; i < dev.cpu_cores().size(); ++i) {
+  if (cpu_cores().empty()) GTEST_SKIP() << "No CPU cores";
+  for (size_t i = 0; i < cpu_cores().size(); ++i) {
     uint32_t freq = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_core_current_freq_limit", "core=" + std::to_string(i),
                        kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_core_current_freq_limit(dev.cpu_cores()[i], &freq);
+    amdsmi_status_t err = amdsmi_get_cpu_core_current_freq_limit(cpu_cores()[i], &freq);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("core=" + std::to_string(i), err,
@@ -181,16 +171,14 @@ TEST(CpuUnit, GetCoreCurrentFreqLimit_AllCores) {
 }
 
 // ---- amdsmi_get_cpu_rail_isofreq_policy (output guarded) ----
-TEST(CpuUnit, GetRailIsofreqPolicy_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetRailIsofreqPolicy_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_rail_isofreq_policy", "out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_rail_isofreq_policy(dev.cpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_rail_isofreq_policy(cpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetRailIsofreqPolicy_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetRailIsofreqPolicy_InvalidHandle) {
   uint8_t policy = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_rail_isofreq_policy", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_rail_isofreq_policy(kInvalidHandle, &policy);
@@ -198,14 +186,13 @@ TEST(CpuUnit, GetRailIsofreqPolicy_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetRailIsofreqPolicy_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetRailIsofreqPolicy_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_rail_isofreq_policy");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint8_t policy = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_rail_isofreq_policy", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_rail_isofreq_policy(dev.cpus()[i], &policy);
+    amdsmi_status_t err = amdsmi_get_cpu_rail_isofreq_policy(cpus()[i], &policy);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -217,16 +204,14 @@ TEST(CpuUnit, GetRailIsofreqPolicy_AllCpus) {
 }
 
 // ---- amdsmi_set_cpu_rail_isofreq_policy (write; policy pointer guarded) ----
-TEST(CpuUnit, SetRailIsofreqPolicy_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, SetRailIsofreqPolicy_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_rail_isofreq_policy", "policy=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_set_cpu_rail_isofreq_policy(dev.cpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_set_cpu_rail_isofreq_policy(cpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, SetRailIsofreqPolicy_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetRailIsofreqPolicy_InvalidHandle) {
   bool policy = false;
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_rail_isofreq_policy", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_rail_isofreq_policy(kInvalidHandle, &policy);
@@ -234,15 +219,14 @@ TEST(CpuUnit, SetRailIsofreqPolicy_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, SetRailIsofreqPolicy_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
+TEST_F(CpuUnit, SetRailIsofreqPolicy_AllCpus) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_cpu_rail_isofreq_policy");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     bool policy = false;
     DISPLAY_AMDSMI_API("amdsmi_set_cpu_rail_isofreq_policy", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_set_cpu_rail_isofreq_policy(dev.cpus()[i], &policy);
+    amdsmi_status_t err = amdsmi_set_cpu_rail_isofreq_policy(cpus()[i], &policy);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_NO_HSMP_MSG_SUP);
@@ -256,16 +240,14 @@ TEST(CpuUnit, SetRailIsofreqPolicy_AllCpus) {
 }
 
 // ---- amdsmi_get_cpu_dfc_ctrl (output guarded) ----
-TEST(CpuUnit, GetDfcCtrl_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, GetDfcCtrl_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_dfc_ctrl", "out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_cpu_dfc_ctrl(dev.cpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_cpu_dfc_ctrl(cpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, GetDfcCtrl_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDfcCtrl_InvalidHandle) {
   uint8_t dfc = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_cpu_dfc_ctrl", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_cpu_dfc_ctrl(kInvalidHandle, &dfc);
@@ -273,14 +255,13 @@ TEST(CpuUnit, GetDfcCtrl_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, GetDfcCtrl_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, GetDfcCtrl_AllCpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_cpu_dfc_ctrl");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint8_t dfc = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_cpu_dfc_ctrl", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_cpu_dfc_ctrl(dev.cpus()[i], &dfc);
+    amdsmi_status_t err = amdsmi_get_cpu_dfc_ctrl(cpus()[i], &dfc);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("cpu=" + std::to_string(i), err,
@@ -292,16 +273,14 @@ TEST(CpuUnit, GetDfcCtrl_AllCpus) {
 }
 
 // ---- amdsmi_set_cpu_dfc_ctrl (write; dfc pointer guarded) ----
-TEST(CpuUnit, SetDfcCtrl_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
+TEST_F(CpuUnit, SetDfcCtrl_NullOutput) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_dfc_ctrl", "dfc=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_set_cpu_dfc_ctrl(dev.cpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_set_cpu_dfc_ctrl(cpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(CpuUnit, SetDfcCtrl_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(CpuUnit, SetDfcCtrl_InvalidHandle) {
   uint8_t dfc = 0;
   DISPLAY_AMDSMI_API("amdsmi_set_cpu_dfc_ctrl", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_cpu_dfc_ctrl(kInvalidHandle, &dfc);
@@ -309,16 +288,15 @@ TEST(CpuUnit, SetDfcCtrl_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(CpuUnit, SetDfcCtrl_AllCpus) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
+TEST_F(CpuUnit, SetDfcCtrl_AllCpus) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_cpu_dfc_ctrl");
-  if (dev.cpus().empty()) GTEST_SKIP() << "No CPU processors";
-  for (size_t i = 0; i < dev.cpus().size(); ++i) {
+  if (cpus().empty()) GTEST_SKIP() << "No CPU processors";
+  for (size_t i = 0; i < cpus().size(); ++i) {
     uint8_t dfc = 0;
-    if (amdsmi_get_cpu_dfc_ctrl(dev.cpus()[i], &dfc) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_cpu_dfc_ctrl(cpus()[i], &dfc) != AMDSMI_STATUS_SUCCESS) continue;
     DISPLAY_AMDSMI_API("amdsmi_set_cpu_dfc_ctrl", "cpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_set_cpu_dfc_ctrl(dev.cpus()[i], &dfc);
+    amdsmi_status_t err = amdsmi_set_cpu_dfc_ctrl(cpus()[i], &dfc);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM, AMDSMI_STATUS_NO_HSMP_MSG_SUP);

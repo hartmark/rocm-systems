@@ -32,16 +32,14 @@ using amdsmi::unittest::kInvalidHandle;
 using amdsmi::unittest::kVerbose;
 
 // ---------------- amdsmi_get_gpu_process_isolation ----------------
-TEST(GpuUnit, GetProcessIsolation_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetProcessIsolation_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_process_isolation", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_process_isolation(dev.gpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_process_isolation(gpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetProcessIsolation_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetProcessIsolation_InvalidHandle) {
   uint32_t pisolate = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_process_isolation", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_get_gpu_process_isolation(kInvalidHandle, &pisolate);
@@ -49,14 +47,13 @@ TEST(GpuUnit, GetProcessIsolation_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetProcessIsolation_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetProcessIsolation_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_process_isolation");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     uint32_t pisolate = 0;
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_process_isolation", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_gpu_process_isolation(dev.gpus()[i], &pisolate);
+    amdsmi_status_t err = amdsmi_get_gpu_process_isolation(gpus()[i], &pisolate);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -68,16 +65,14 @@ TEST(GpuUnit, GetProcessIsolation_AllGpus) {
 }
 
 // ---------------- amdsmi_get_gpu_process_list ----------------
-TEST(GpuUnit, GetProcessList_NullMaxProcesses) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetProcessList_NullMaxProcesses) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_process_list", "gpu=0 max=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_process_list(dev.gpus()[0], nullptr, nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_process_list(gpus()[0], nullptr, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetProcessList_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetProcessList_InvalidHandle) {
   uint32_t max_processes = 16;
   amdsmi_proc_info_t list[16];
   memset(list, 0, sizeof(list));
@@ -87,16 +82,15 @@ TEST(GpuUnit, GetProcessList_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetProcessList_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetProcessList_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_process_list");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     uint32_t max_processes = 16;
     amdsmi_proc_info_t list[16];
     memset(list, 0, sizeof(list));
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_process_list", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_gpu_process_list(dev.gpus()[i], &max_processes, list);
+    amdsmi_status_t err = amdsmi_get_gpu_process_list(gpus()[i], &max_processes, list);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -108,10 +102,9 @@ TEST(GpuUnit, GetProcessList_AllGpus) {
 }
 
 // ---------------- amdsmi_get_gpu_process_list_by_pid ----------------
-TEST(GpuUnit, GetProcessListByPid_NullMaxProcesses) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  std::vector<amdsmi_processor_handle> handles = dev.gpus();
+TEST_F(GpuUnit, GetProcessListByPid_NullMaxProcesses) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  std::vector<amdsmi_processor_handle> handles = gpus();
   amdsmi_proc_info_by_pid_t procs[16];
   memset(procs, 0, sizeof(procs));
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_process_list_by_pid", "max=nullptr", kVerbose);
@@ -120,8 +113,7 @@ TEST(GpuUnit, GetProcessListByPid_NullMaxProcesses) {
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetProcessListByPid_NullHandles) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetProcessListByPid_NullHandles) {
   amdsmi_proc_info_by_pid_t procs[16];
   memset(procs, 0, sizeof(procs));
   uint32_t max_processes = 16;
@@ -131,10 +123,9 @@ TEST(GpuUnit, GetProcessListByPid_NullHandles) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetProcessListByPid_Valid) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  std::vector<amdsmi_processor_handle> handles = dev.gpus();
+TEST_F(GpuUnit, GetProcessListByPid_Valid) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  std::vector<amdsmi_processor_handle> handles = gpus();
   amdsmi_proc_info_by_pid_t procs[16];
   memset(procs, 0, sizeof(procs));
   uint32_t max_processes = 16;
@@ -148,16 +139,14 @@ TEST(GpuUnit, GetProcessListByPid_Valid) {
 }
 
 // ---------------- amdsmi_get_gpu_compute_process_info (no handle) ----------------
-TEST(GpuUnit, GetComputeProcessInfo_NullNumItems) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetComputeProcessInfo_NullNumItems) {
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_compute_process_info", "num_items=nullptr", kVerbose);
   amdsmi_status_t err = amdsmi_get_gpu_compute_process_info(nullptr, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetComputeProcessInfo_Valid) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetComputeProcessInfo_Valid) {
   uint32_t num_items = 0;
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_compute_process_info", "count query", kVerbose);
   amdsmi_status_t err = amdsmi_get_gpu_compute_process_info(nullptr, &num_items);
@@ -169,8 +158,7 @@ TEST(GpuUnit, GetComputeProcessInfo_Valid) {
 }
 
 // ---------------- amdsmi_get_gpu_compute_process_info_by_pid (no handle) ----------------
-TEST(GpuUnit, GetComputeProcessInfoByPid_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetComputeProcessInfoByPid_NullOutput) {
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_compute_process_info_by_pid", "out=nullptr", kVerbose);
   amdsmi_status_t err =
       amdsmi_get_gpu_compute_process_info_by_pid(static_cast<uint32_t>(getpid()), nullptr);
@@ -178,8 +166,7 @@ TEST(GpuUnit, GetComputeProcessInfoByPid_NullOutput) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetComputeProcessInfoByPid_Valid) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetComputeProcessInfoByPid_Valid) {
   amdsmi_process_info_t proc;
   memset(&proc, 0, sizeof(proc));
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_compute_process_info_by_pid", "self pid", kVerbose);
@@ -193,8 +180,7 @@ TEST(GpuUnit, GetComputeProcessInfoByPid_Valid) {
 }
 
 // ---------------- amdsmi_get_gpu_compute_process_gpus (no handle) ----------------
-TEST(GpuUnit, GetComputeProcessGpus_NullNumDevices) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetComputeProcessGpus_NullNumDevices) {
   uint32_t dv_indices[16];
   memset(dv_indices, 0, sizeof(dv_indices));
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_compute_process_gpus", "num_devices=nullptr", kVerbose);
@@ -204,8 +190,7 @@ TEST(GpuUnit, GetComputeProcessGpus_NullNumDevices) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetComputeProcessGpus_Valid) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetComputeProcessGpus_Valid) {
   uint32_t dv_indices[16];
   memset(dv_indices, 0, sizeof(dv_indices));
   uint32_t num_devices = 16;
@@ -221,24 +206,21 @@ TEST(GpuUnit, GetComputeProcessGpus_Valid) {
 }
 
 // ---------------- amdsmi_set_gpu_process_isolation (SET, read/restore) ----------------
-TEST(GpuUnit, SetProcessIsolation_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetProcessIsolation_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_process_isolation", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_gpu_process_isolation(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, SetProcessIsolation_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetProcessIsolation_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_gpu_process_isolation");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     uint32_t pisolate = 0;
-    if (amdsmi_get_gpu_process_isolation(dev.gpus()[i], &pisolate) != AMDSMI_STATUS_SUCCESS)
-      continue;
+    if (amdsmi_get_gpu_process_isolation(gpus()[i], &pisolate) != AMDSMI_STATUS_SUCCESS) continue;
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_process_isolation", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_set_gpu_process_isolation(dev.gpus()[i], pisolate);
+    amdsmi_status_t err = amdsmi_set_gpu_process_isolation(gpus()[i], pisolate);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);

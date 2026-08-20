@@ -29,16 +29,14 @@ using amdsmi::unittest::kInvalidHandle;
 using amdsmi::unittest::kVerbose;
 
 // ---------------- amdsmi_get_energy_count ----------------
-TEST(GpuUnit, GetEnergyCount_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetEnergyCount_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_energy_count", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_energy_count(dev.gpus()[0], nullptr, nullptr, nullptr);
+  amdsmi_status_t err = amdsmi_get_energy_count(gpus()[0], nullptr, nullptr, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetEnergyCount_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetEnergyCount_InvalidHandle) {
   uint64_t energy = 0, ts = 0;
   float res = 0.0f;
   DISPLAY_AMDSMI_API("amdsmi_get_energy_count", "handle=invalid", kVerbose);
@@ -47,18 +45,17 @@ TEST(GpuUnit, GetEnergyCount_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetEnergyCount_AllGpus) {
+TEST_F(GpuUnit, GetEnergyCount_AllGpus) {
   GTEST_SKIP() << "amdsmi_get_energy_count returns AMDSMI_STATUS_UNEXPECTED_DATA; root cause "
                   "unknown, under investigation";
 
-  amdsmi::unittest::UnitDevices dev;
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_energy_count");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     uint64_t energy = 0, ts = 0;
     float res = 0.0f;
     DISPLAY_AMDSMI_API("amdsmi_get_energy_count", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_energy_count(dev.gpus()[i], &energy, &res, &ts);
+    amdsmi_status_t err = amdsmi_get_energy_count(gpus()[i], &energy, &res, &ts);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -70,16 +67,14 @@ TEST(GpuUnit, GetEnergyCount_AllGpus) {
 }
 
 // ---------------- amdsmi_get_supported_power_cap ----------------
-TEST(GpuUnit, GetSupportedPowerCap_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetSupportedPowerCap_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_supported_power_cap", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_supported_power_cap(dev.gpus()[0], nullptr, nullptr, nullptr);
+  amdsmi_status_t err = amdsmi_get_supported_power_cap(gpus()[0], nullptr, nullptr, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetSupportedPowerCap_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetSupportedPowerCap_InvalidHandle) {
   uint32_t count = 8;
   uint32_t inds[8];
   amdsmi_power_cap_type_t types[8];
@@ -91,18 +86,17 @@ TEST(GpuUnit, GetSupportedPowerCap_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetSupportedPowerCap_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetSupportedPowerCap_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_supported_power_cap");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     uint32_t count = 8;
     uint32_t inds[8];
     amdsmi_power_cap_type_t types[8];
     memset(inds, 0, sizeof(inds));
     memset(types, 0, sizeof(types));
     DISPLAY_AMDSMI_API("amdsmi_get_supported_power_cap", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_supported_power_cap(dev.gpus()[i], &count, inds, types);
+    amdsmi_status_t err = amdsmi_get_supported_power_cap(gpus()[i], &count, inds, types);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -114,16 +108,14 @@ TEST(GpuUnit, GetSupportedPowerCap_AllGpus) {
 }
 
 // ---------------- amdsmi_get_power_cap_info ----------------
-TEST(GpuUnit, GetPowerCapInfo_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetPowerCapInfo_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_power_cap_info", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_power_cap_info(dev.gpus()[0], 0, nullptr);
+  amdsmi_status_t err = amdsmi_get_power_cap_info(gpus()[0], 0, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetPowerCapInfo_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetPowerCapInfo_InvalidHandle) {
   amdsmi_power_cap_info_t info;
   memset(&info, 0, sizeof(info));
   DISPLAY_AMDSMI_API("amdsmi_get_power_cap_info", "handle=invalid", kVerbose);
@@ -132,15 +124,14 @@ TEST(GpuUnit, GetPowerCapInfo_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetPowerCapInfo_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetPowerCapInfo_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_power_cap_info");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_power_cap_info_t info;
     memset(&info, 0, sizeof(info));
     DISPLAY_AMDSMI_API("amdsmi_get_power_cap_info", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_power_cap_info(dev.gpus()[i], 0, &info);
+    amdsmi_status_t err = amdsmi_get_power_cap_info(gpus()[i], 0, &info);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -152,17 +143,15 @@ TEST(GpuUnit, GetPowerCapInfo_AllGpus) {
 }
 
 // ---------------- amdsmi_get_gpu_power_profile_presets ----------------
-TEST(GpuUnit, GetPowerProfilePresets_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetPowerProfilePresets_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_power_profile_presets", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_gpu_power_profile_presets(dev.gpus()[0], 0, nullptr);
+  amdsmi_status_t err = amdsmi_get_gpu_power_profile_presets(gpus()[0], 0, nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_ARG_PTR_NULL);
   AMDSMI_EXPECT_NULL_ARG(err);
 }
-TEST(GpuUnit, GetPowerProfilePresets_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetPowerProfilePresets_InvalidHandle) {
   amdsmi_power_profile_status_t status;
   memset(&status, 0, sizeof(status));
   DISPLAY_AMDSMI_API("amdsmi_get_gpu_power_profile_presets", "handle=invalid", kVerbose);
@@ -171,16 +160,15 @@ TEST(GpuUnit, GetPowerProfilePresets_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetPowerProfilePresets_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetPowerProfilePresets_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_gpu_power_profile_presets");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_power_profile_status_t status;
     memset(&status, 0, sizeof(status));
     DISPLAY_AMDSMI_API("amdsmi_get_gpu_power_profile_presets", "gpu=" + std::to_string(i),
                        kVerbose);
-    amdsmi_status_t err = amdsmi_get_gpu_power_profile_presets(dev.gpus()[i], 0, &status);
+    amdsmi_status_t err = amdsmi_get_gpu_power_profile_presets(gpus()[i], 0, &status);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -192,16 +180,14 @@ TEST(GpuUnit, GetPowerProfilePresets_AllGpus) {
 }
 
 // ---------------- amdsmi_get_power_info ----------------
-TEST(GpuUnit, GetPowerInfo_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, GetPowerInfo_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_get_power_info", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_get_power_info(dev.gpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_get_power_info(gpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, GetPowerInfo_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetPowerInfo_InvalidHandle) {
   amdsmi_power_info_t info;
   memset(&info, 0, sizeof(info));
   DISPLAY_AMDSMI_API("amdsmi_get_power_info", "handle=invalid", kVerbose);
@@ -210,15 +196,14 @@ TEST(GpuUnit, GetPowerInfo_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, GetPowerInfo_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, GetPowerInfo_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_get_power_info");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_power_info_t info;
     memset(&info, 0, sizeof(info));
     DISPLAY_AMDSMI_API("amdsmi_get_power_info", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_get_power_info(dev.gpus()[i], &info);
+    amdsmi_status_t err = amdsmi_get_power_info(gpus()[i], &info);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -230,16 +215,14 @@ TEST(GpuUnit, GetPowerInfo_AllGpus) {
 }
 
 // ---------------- amdsmi_is_gpu_power_management_enabled ----------------
-TEST(GpuUnit, IsPowerManagementEnabled_NullOutput) {
-  amdsmi::unittest::UnitDevices dev;
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuUnit, IsPowerManagementEnabled_NullOutput) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   DISPLAY_AMDSMI_API("amdsmi_is_gpu_power_management_enabled", "gpu=0 out=nullptr", kVerbose);
-  amdsmi_status_t err = amdsmi_is_gpu_power_management_enabled(dev.gpus()[0], nullptr);
+  amdsmi_status_t err = amdsmi_is_gpu_power_management_enabled(gpus()[0], nullptr);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL);
   EXPECT_EQ(err, AMDSMI_STATUS_INVAL);
 }
-TEST(GpuUnit, IsPowerManagementEnabled_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, IsPowerManagementEnabled_InvalidHandle) {
   bool enabled = false;
   DISPLAY_AMDSMI_API("amdsmi_is_gpu_power_management_enabled", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_is_gpu_power_management_enabled(kInvalidHandle, &enabled);
@@ -247,15 +230,14 @@ TEST(GpuUnit, IsPowerManagementEnabled_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, IsPowerManagementEnabled_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, IsPowerManagementEnabled_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_is_gpu_power_management_enabled");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     bool enabled = false;
     DISPLAY_AMDSMI_API("amdsmi_is_gpu_power_management_enabled", "gpu=" + std::to_string(i),
                        kVerbose);
-    amdsmi_status_t err = amdsmi_is_gpu_power_management_enabled(dev.gpus()[i], &enabled);
+    amdsmi_status_t err = amdsmi_is_gpu_power_management_enabled(gpus()[i], &enabled);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED);
     amdsmi_col.Record("gpu=" + std::to_string(i), err,
@@ -267,24 +249,22 @@ TEST(GpuUnit, IsPowerManagementEnabled_AllGpus) {
 }
 
 // ---------------- amdsmi_set_power_cap (SET) ----------------
-TEST(GpuUnit, SetPowerCap_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetPowerCap_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_power_cap", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_power_cap(kInvalidHandle, 0, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, SetPowerCap_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetPowerCap_AllGpus) {
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_power_cap");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_power_cap_info_t info;
     memset(&info, 0, sizeof(info));
-    if (amdsmi_get_power_cap_info(dev.gpus()[i], 0, &info) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_power_cap_info(gpus()[i], 0, &info) != AMDSMI_STATUS_SUCCESS) continue;
     DISPLAY_AMDSMI_API("amdsmi_set_power_cap", "gpu=" + std::to_string(i), kVerbose);
-    amdsmi_status_t err = amdsmi_set_power_cap(dev.gpus()[i], 0, info.power_cap);
+    amdsmi_status_t err = amdsmi_set_power_cap(gpus()[i], 0, info.power_cap);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -297,8 +277,7 @@ TEST(GpuUnit, SetPowerCap_AllGpus) {
 }
 
 // ---------------- amdsmi_set_gpu_power_profile (SET, enum) ----------------
-TEST(GpuUnit, SetPowerProfile_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuUnit, SetPowerProfile_InvalidHandle) {
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_power_profile", "handle=invalid", kVerbose);
   amdsmi_status_t err =
       amdsmi_set_gpu_power_profile(kInvalidHandle, 0, AMDSMI_PWR_PROF_PRST_BOOTUP_DEFAULT);
@@ -306,15 +285,14 @@ TEST(GpuUnit, SetPowerProfile_InvalidHandle) {
                         AMDSMI_STATUS_NOT_SUPPORTED);
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
-TEST(GpuUnit, SetPowerProfile_AllGpus) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
+TEST_F(GpuUnit, SetPowerProfile_AllGpus) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
   amdsmi::unittest::StatusCollector amdsmi_col("amdsmi_set_gpu_power_profile");
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  for (size_t i = 0; i < gpus().size(); ++i) {
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_power_profile", "gpu=" + std::to_string(i), kVerbose);
     amdsmi_status_t err =
-        amdsmi_set_gpu_power_profile(dev.gpus()[i], 0, AMDSMI_PWR_PROF_PRST_BOOTUP_DEFAULT);
+        amdsmi_set_gpu_power_profile(gpus()[i], 0, AMDSMI_PWR_PROF_PRST_BOOTUP_DEFAULT);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);

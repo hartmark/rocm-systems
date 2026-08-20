@@ -247,9 +247,9 @@ def Main(amdsmi, file_names):
         amdsmi_map[func_name] = {
             "tested": 0,
             "c_unit_test": 0,
-            "c_func_test": 0,
+            "c_integration": 0,
             "py_unit_test": 0,
-            "py_func_test": 0,
+            "py_integration": 0,
         }
     # api_map[file_name][func_name] = number_times_called
     for file_name in api_map:
@@ -265,10 +265,10 @@ def Main(amdsmi, file_names):
             amdsmi_map[func_name][file_name] = 1
 
     api_summary = []
-    msg = f"API, Tested, c_unit_test, c_func_test, py_unit_test, py_func_test"
+    msg = f"API, Tested, c_unit_test, c_integration, py_unit_test, py_integration"
     api_summary.append(msg)
     for func_name, tests_map in amdsmi_map.items():
-        msg = f"{func_name}, {tests_map['tested']}, {tests_map['c_unit_test']}, {tests_map['c_func_test']}, {tests_map['py_unit_test']}, {tests_map['py_func_test']}"
+        msg = f"{func_name}, {tests_map['tested']}, {tests_map['c_unit_test']}, {tests_map['c_integration']}, {tests_map['py_unit_test']}, {tests_map['py_integration']}"
         api_summary.append(msg)
     api_summary.append("")
     api_summary = "\n".join(api_summary)
@@ -278,46 +278,46 @@ def Main(amdsmi, file_names):
     # Get information about each test component
     c_any_total = 0
     c_unit_test_total = 0
-    c_func_test_total = 0
+    c_integration_total = 0
     py_any_total = 0
     py_unit_test_total = 0
-    py_func_test_total = 0
+    py_integration_total = 0
     any_total = 0
     unit_test_total = 0
-    func_test_total = 0
+    integration_total = 0
     api_missing = []
     api_tested = []
     for func_name, values in amdsmi_map.items():
         c_any = 0
         py_any = 0
         if values["tested"]:
-            if values["c_unit_test"] or values["c_func_test"]:
+            if values["c_unit_test"] or values["c_integration"]:
                 c_any = 1
                 c_any_total += 1
                 if values["c_unit_test"]:
                     c_unit_test_total += 1
-                if values["c_func_test"]:
-                    c_func_test_total += 1
+                if values["c_integration"]:
+                    c_integration_total += 1
 
-            if values["py_unit_test"] or values["py_func_test"]:
+            if values["py_unit_test"] or values["py_integration"]:
                 py_any = 1
                 py_any_total += 1
                 if values["py_unit_test"]:
                     py_unit_test_total += 1
-                if values["py_func_test"]:
-                    py_func_test_total += 1
+                if values["py_integration"]:
+                    py_integration_total += 1
 
-            if values["c_func_test"] or values["py_func_test"]:
-                func_test_total += 1
+            if values["c_integration"] or values["py_integration"]:
+                integration_total += 1
 
             if values["c_unit_test"] or values["py_unit_test"]:
                 unit_test_total += 1
 
             if (
                 values["c_unit_test"]
-                or values["c_func_test"]
+                or values["c_integration"]
                 or values["py_unit_test"]
-                or values["py_func_test"]
+                or values["py_integration"]
             ):
                 any_total += 1
 
@@ -329,7 +329,7 @@ def Main(amdsmi, file_names):
             Print("DEBUG", f" Tested:", ending="")
         Print(
             "DEBUG",
-            f" {func_name}: C(any={c_any} unit={values['c_unit_test']} func={values['c_func_test']}) py(any={py_any} unit={values['py_unit_test']} func={values['py_func_test']})",
+            f" {func_name}: C(any={c_any} unit={values['c_unit_test']} int={values['c_integration']}) py(any={py_any} unit={values['py_unit_test']} int={values['py_integration']})",
         )
 
     # Create summary report
@@ -373,23 +373,23 @@ def Main(amdsmi, file_names):
 
     c_any_total_percent = (c_any_total / num_api) * 100
     c_unit_test_total_percent = (c_unit_test_total / num_api) * 100
-    c_func_test_total_percent = (c_func_test_total / num_api) * 100
+    c_integration_total_percent = (c_integration_total / num_api) * 100
 
     py_any_total_percent = (py_any_total / num_api) * 100
     py_unit_test_total_percent = (py_unit_test_total / num_api) * 100
-    py_func_test_total_percent = (py_func_test_total / num_api) * 100
+    py_integration_total_percent = (py_integration_total / num_api) * 100
 
     any_total_percent = (any_total / num_api) * 100
     unit_test_total_percent = (unit_test_total / num_api) * 100
-    func_test_total_percent = (func_test_total / num_api) * 100
+    integration_total_percent = (integration_total / num_api) * 100
 
     msg = f"{'API':^5s} {'Test':>5s}({'%':^5s}) {'Unit':>5s}({'%':^5s}) {'Func':>5s}({'%':^5s})"
     api_summary_table.append(msg)
-    msg = f"{'C':^5s} {c_any_total:>5d}({c_any_total_percent:>5.1f}) {c_unit_test_total:>5d}({c_unit_test_total_percent:>5.1f}) {c_func_test_total:>5d}({c_func_test_total_percent:>5.1f})"
+    msg = f"{'C':^5s} {c_any_total:>5d}({c_any_total_percent:>5.1f}) {c_unit_test_total:>5d}({c_unit_test_total_percent:>5.1f}) {c_integration_total:>5d}({c_integration_total_percent:>5.1f})"
     api_summary_table.append(msg)
-    msg = f"{'Py':^5s} {py_any_total:>5d}({py_any_total_percent:>5.1f}) {py_unit_test_total:>5d}({py_unit_test_total_percent:>5.1f}) {py_func_test_total:>5d}({py_func_test_total_percent:>5.1f})"
+    msg = f"{'Py':^5s} {py_any_total:>5d}({py_any_total_percent:>5.1f}) {py_unit_test_total:>5d}({py_unit_test_total_percent:>5.1f}) {py_integration_total:>5d}({py_integration_total_percent:>5.1f})"
     api_summary_table.append(msg)
-    msg = f"{'Total':^5s} {any_total:>5d}({any_total_percent:>5.1f}) {unit_test_total:>5d}({unit_test_total_percent:>5.1f}) {func_test_total:>5d}({func_test_total_percent:>5.1f})"
+    msg = f"{'Total':^5s} {any_total:>5d}({any_total_percent:>5.1f}) {unit_test_total:>5d}({unit_test_total_percent:>5.1f}) {integration_total:>5d}({integration_total_percent:>5.1f})"
     api_summary_table.append(msg)
     api_summary_table.append(f"Num APIs: {num_api}")
     api_summary_table.append("")
@@ -406,10 +406,8 @@ def Parse_Command_Line(cmds=None):
             setattr(namespace, self.dest, values)
             setattr(namespace, f"{self.dest}_called", True)
 
-    msg_description = "Create API coverage report for unit_tests.py and integration_test.py tests"
-    msg_epilog = (
-        "Example:\n\t%(prog)s --c_unit_test <c_unit_test.log> --py_func_test <py_func_test.log>"
-    )
+    msg_description = "Create API coverage report for unit_test.py and integration_test.py tests"
+    msg_epilog = "Example:\n\t%(prog)s --c_unit_test <c_unit_test.log> --py_integration_test <py_integration_test.log>"
     parser = argparse.ArgumentParser(
         description=msg_description,
         formatter_class=argparse.RawTextHelpFormatter,
@@ -445,19 +443,19 @@ def Parse_Command_Line(cmds=None):
         help="Filename for C unit_test output, default=%(default)s",
     )
     parser_logs.add_argument(
-        "--c_func_test",
-        default="_c_func_test.log",
-        help="Filename for C func_test output, default=%(default)s",
+        "--c_integration",
+        default="_amdsmitst.log",
+        help="Filename for C integration_test output, default=%(default)s",
     )
     parser_logs.add_argument(
         "--py_unit_test",
-        default="_py_unit_test.log",
+        default="_unit_test.log",
         help="Filename for Python unit_test output, default=%(default)s",
     )
     parser_logs.add_argument(
-        "--py_func_test",
-        default="_py_func_test.log",
-        help="Filename for Python func_test output, default=%(default)s",
+        "--py_integration",
+        default="_integration_test.log",
+        help="Filename for Python integration_test output, default=%(default)s",
     )
     parser_output = parser.add_argument_group("Output File")
     parser_output.add_argument(
@@ -482,9 +480,9 @@ def Parse_Command_Line(cmds=None):
 
     args.file_names = {}
     args.file_names["c_unit_test"] = args.c_unit_test
-    args.file_names["c_func_test"] = args.c_func_test
+    args.file_names["c_integration"] = args.c_integration
     args.file_names["py_unit_test"] = args.py_unit_test
-    args.file_names["py_func_test"] = args.py_func_test
+    args.file_names["py_integration"] = args.py_integration
     return args
 
 

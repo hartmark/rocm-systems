@@ -29,8 +29,8 @@ using amdsmi::unittest::kInvalidHandle;
 using amdsmi::unittest::kVerbose;
 
 // amdsmi_get_clk_freq / amdsmi_set_clk_freq (frequency-level mask).
-TEST(GpuFunctionalReadWrite, SetClkFreq_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetClkFreq_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_clk_freq", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_clk_freq(kInvalidHandle, AMDSMI_CLK_TYPE_SYS, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -38,20 +38,19 @@ TEST(GpuFunctionalReadWrite, SetClkFreq_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, ClkFreq_SetRestore) {
+TEST_F(GpuFunctionalReadWrite, ClkFreq_SetRestore) {
   GTEST_SKIP() << "amdsmi_set_clk_freq returns AMDSMI_STATUS_INVAL in ClkFreq_SetRestore; root "
                   "cause unknown, under investigation";
 
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_clk_freq");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     for (int t = AMDSMI_CLK_TYPE_FIRST; t <= AMDSMI_CLK_TYPE__MAX; ++t) {
       amdsmi_clk_type_t clk_type = static_cast<amdsmi_clk_type_t>(t);
       amdsmi_frequencies_t f;
       memset(&f, 0, sizeof(f));
-      if (amdsmi_get_clk_freq(dev.gpus()[i], clk_type, &f) != AMDSMI_STATUS_SUCCESS) continue;
+      if (amdsmi_get_clk_freq(gpus()[i], clk_type, &f) != AMDSMI_STATUS_SUCCESS) continue;
       if (f.num_supported == 0 || f.num_supported >= 64) continue;
 
       uint64_t all_mask = (1ULL << f.num_supported) - 1;
@@ -59,7 +58,7 @@ TEST(GpuFunctionalReadWrite, ClkFreq_SetRestore) {
 
       std::string label = "gpu=" + std::to_string(i) + " clk=" + std::to_string(t);
       DISPLAY_AMDSMI_API("amdsmi_set_clk_freq", label + " set=all", kVerbose);
-      amdsmi_status_t err = amdsmi_set_clk_freq(dev.gpus()[i], clk_type, all_mask);
+      amdsmi_status_t err = amdsmi_set_clk_freq(gpus()[i], clk_type, all_mask);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                             AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                             AMDSMI_STATUS_NO_PERM);
@@ -70,7 +69,7 @@ TEST(GpuFunctionalReadWrite, ClkFreq_SetRestore) {
 
       if (err == AMDSMI_STATUS_SUCCESS) {
         DISPLAY_AMDSMI_API("amdsmi_set_clk_freq", label + " restore", kVerbose);
-        amdsmi_status_t rerr = amdsmi_set_clk_freq(dev.gpus()[i], clk_type, restore_mask);
+        amdsmi_status_t rerr = amdsmi_set_clk_freq(gpus()[i], clk_type, restore_mask);
         DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, rerr, AMDSMI_STATUS_SUCCESS);
         EXPECT_EQ(rerr, AMDSMI_STATUS_SUCCESS) << label << " failed to restore clk freq mask";
       }
@@ -80,8 +79,8 @@ TEST(GpuFunctionalReadWrite, ClkFreq_SetRestore) {
 }
 
 // amdsmi_get_gpu_pci_bandwidth / amdsmi_set_gpu_pci_bandwidth (bandwidth mask).
-TEST(GpuFunctionalReadWrite, SetPciBandwidth_InvalidHandle) {
-  amdsmi::unittest::UnitDevices dev;
+TEST_F(GpuFunctionalReadWrite, SetPciBandwidth_InvalidHandle) {
+  RequireInit();
   DISPLAY_AMDSMI_API("amdsmi_set_gpu_pci_bandwidth", "handle=invalid", kVerbose);
   amdsmi_status_t err = amdsmi_set_gpu_pci_bandwidth(kInvalidHandle, 0);
   DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_INVAL,
@@ -89,15 +88,14 @@ TEST(GpuFunctionalReadWrite, SetPciBandwidth_InvalidHandle) {
   EXPECT_NE(err, AMDSMI_STATUS_SUCCESS);
 }
 
-TEST(GpuFunctionalReadWrite, PciBandwidth_SetRestore) {
-  amdsmi::unittest::UnitDevices dev;
-  AMDSMI_SKIP_IF_MUTATION_DISABLED();
-  if (dev.gpus().empty()) GTEST_SKIP() << "No GPU processors";
+TEST_F(GpuFunctionalReadWrite, PciBandwidth_SetRestore) {
+  AMDSMI_SKIP_UNLESS_MUTATION_ALLOWED();
+  if (gpus().empty()) GTEST_SKIP() << "No GPU processors";
   amdsmi::unittest::StatusCollector col("amdsmi_set_gpu_pci_bandwidth");
-  for (size_t i = 0; i < dev.gpus().size(); ++i) {
+  for (size_t i = 0; i < gpus().size(); ++i) {
     amdsmi_pcie_bandwidth_t bw;
     memset(&bw, 0, sizeof(bw));
-    if (amdsmi_get_gpu_pci_bandwidth(dev.gpus()[i], &bw) != AMDSMI_STATUS_SUCCESS) continue;
+    if (amdsmi_get_gpu_pci_bandwidth(gpus()[i], &bw) != AMDSMI_STATUS_SUCCESS) continue;
     uint32_t n = bw.transfer_rate.num_supported;
     if (n == 0 || n >= 64) continue;
 
@@ -107,7 +105,7 @@ TEST(GpuFunctionalReadWrite, PciBandwidth_SetRestore) {
 
     std::string label = "gpu=" + std::to_string(i);
     DISPLAY_AMDSMI_API("amdsmi_set_gpu_pci_bandwidth", label + " set=all", kVerbose);
-    amdsmi_status_t err = amdsmi_set_gpu_pci_bandwidth(dev.gpus()[i], all_mask);
+    amdsmi_status_t err = amdsmi_set_gpu_pci_bandwidth(gpus()[i], all_mask);
     DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, err, AMDSMI_STATUS_SUCCESS,
                           AMDSMI_STATUS_NOT_SUPPORTED, AMDSMI_STATUS_NOT_YET_IMPLEMENTED,
                           AMDSMI_STATUS_NO_PERM);
@@ -118,7 +116,7 @@ TEST(GpuFunctionalReadWrite, PciBandwidth_SetRestore) {
 
     if (err == AMDSMI_STATUS_SUCCESS) {
       DISPLAY_AMDSMI_API("amdsmi_set_gpu_pci_bandwidth", label + " restore", kVerbose);
-      amdsmi_status_t rerr = amdsmi_set_gpu_pci_bandwidth(dev.gpus()[i], restore_mask);
+      amdsmi_status_t rerr = amdsmi_set_gpu_pci_bandwidth(gpus()[i], restore_mask);
       DISPLAY_AMDSMI_STATUS(kVerbose, __FILE__, __LINE__, rerr, AMDSMI_STATUS_SUCCESS);
       EXPECT_EQ(rerr, AMDSMI_STATUS_SUCCESS) << label << " failed to restore pci bandwidth mask";
     }
