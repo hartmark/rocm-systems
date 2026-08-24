@@ -96,7 +96,7 @@ static void RunGenericTest(TestBase* test) {
 }
 
 // TEST ENTRY TEMPLATE:
-// TEST(<Component><Type><Operation>, <Feature><Case>) {
+// TEST_F(<Component><Type><Operation>, <Feature><Case>) {
 //  <Test Implementation class> <test_obj>;
 //
 //  // Copy and modify implementation of RunGenericTest() if you need to deviate
@@ -352,17 +352,19 @@ TEST_F(SystemFunctionalReadOnly, TestCrossProcessSerialization) {
   tst.Run();
   RunCustomTestEpilog(&tst);
 }
-/*
+
 TEST_F(SystemFunctionalReadOnly, TestConcurrentInit) {
+  // Asserts an over-shutdown yields AMDSMI_STATUS_INIT_ERROR, but amdsmi_shut_down()
+  // returns SUCCESS once the init refcount is already zero. See known_failures.md.
+  GTEST_SKIP() << "amdsmi_shut_down() does not report INIT_ERROR on over-shutdown";
   TestConcurrentInit tst;
   SetFlags(&tst);
   tst.DisplayTestInfo();
-  //  tst.SetUp();   // Avoid extra amdsmi_init
+  tst.SetUp();
   tst.Run();
-  // RunCustomTestEpilog(&tst);  // Avoid extra amdsmi_shut_down
+  // Run() drains the refcount itself; RunCustomTestEpilog would shut down again.
   tst.DisplayResults();
 }
-*/
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

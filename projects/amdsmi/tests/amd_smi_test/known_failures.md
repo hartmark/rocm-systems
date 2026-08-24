@@ -57,6 +57,7 @@ an undocumented status instead of the expected `AMDSMI_STATUS_INVAL`.
 | `amdsmi_get_gpu_metrics_header_info` | Crashes on `nullptr` output pointer; should return `AMDSMI_STATUS_INVAL` | `GpuUnit.GetMetricsHeaderInfo_NullOutput` |
 | `amdsmi_topo_get_numa_node_number` | Crashes on `nullptr` output pointer; should return `AMDSMI_STATUS_INVAL` | `SystemUnit.TopoGetNumaNodeNumber_NullOutput` |
 | `amdsmi_get_processor_handle_from_bdf` | Returns `AMDSMI_STATUS_API_FAILED` for zero BDF; should return `NOT_FOUND` or `INVAL` | `SystemUnit.GetProcessorHandleFromBdf_ZeroBdf` |
+| `amdsmi_shut_down` | Returns `AMDSMI_STATUS_SUCCESS` when the init refcount is already zero; the test expects `AMDSMI_STATUS_INIT_ERROR` | `SystemFunctionalReadOnly.TestConcurrentInit` |
 
 ## Re-enabling a test
 
