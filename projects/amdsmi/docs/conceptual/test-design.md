@@ -183,8 +183,8 @@ declare no class of their own.
 
 **Every test registers with `TEST_F(Suite, Name)`** — never the fixture-less `TEST()`. The suite
 fixtures in `unit/unit_test_framework.h` own the `amdsmi_init`, device enumeration and shutdown that
-each test depends on, and GTest aborts any suite whose tests do not all share one fixture class.
-`check_test_conventions.py` enforces this.
+each test depends on. Mixing `TEST()` into a suite that uses `TEST_F()` still compiles, but GTest
+then fails every `TEST()` case in that suite at runtime. `check_test_conventions.py` enforces this.
 
 **GTest suites registered in `main.cc` follow the `<Component><Type>[<Operation>]` scheme**:
 
