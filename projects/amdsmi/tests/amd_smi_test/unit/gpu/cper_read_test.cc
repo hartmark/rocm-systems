@@ -19,7 +19,7 @@
 
 #include "amd_smi/impl/amd_smi_cper.h"
 #include "amd_smi/impl/amd_smi_cper_testing.h"
-#include "unit/unit_test_framework.h"
+#include "api_test_framework.h"
 
 namespace {
 

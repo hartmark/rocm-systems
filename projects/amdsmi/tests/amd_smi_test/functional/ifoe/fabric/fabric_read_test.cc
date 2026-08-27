@@ -9,8 +9,8 @@
 #include <iostream>
 
 #include "amd_smi/amdsmi.h"
+#include "api_test_framework.h"
 #include "test_common.h"
-#include "unit/unit_test_framework.h"
 
 // Category mask covering all telemetry categories
 static constexpr uint32_t kAllCategories =
@@ -133,8 +133,10 @@ void TestFabricRead::Run(void) {
         std::cout << "\t\tversion:        " << fabric_info.fabric_version << "\n"
                   << "\t\taccelerator_id: " << v1.accelerator_id << "\n"
                   << "\t\tfabric_type:    " << v1.fabric_type << "\n"
-                  << "\t\tbandwidth:      " << v1.bandwidth << " Mb/s" << "\n"
-                  << "\t\tlatency:        " << v1.latency << " ns" << "\n"
+                  << "\t\tbandwidth:      " << v1.bandwidth << " Mb/s"
+                  << "\n"
+                  << "\t\tlatency:        " << v1.latency << " ns"
+                  << "\n"
                   << "\t\tvpod_id:        " << v1.vpod_id << "\n"
                   << "\t\tvpod_size:      " << v1.vpod_size << "\n"
                   << "\t\tppod_size:      " << v1.ppod_size << "\n"
