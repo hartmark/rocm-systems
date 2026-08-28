@@ -64,6 +64,10 @@ Full documentation for amd_smi_lib is available at [https://rocm.docs.amd.com/pr
 - **Fixed `amd-smi ras --afid --folder --json` emitting nothing when no CPER files are readable**.  
   - When every `.cper` file in the folder was skipped (e.g. rejected as a symlink), the JSON path printed empty output, so consumers feeding stdout to `json.loads` failed with `Expecting value: line 1 column 1 (char 0)`. It now emits `[]` for that case, matching the `--cper --json` contract.
 
+- **Fixed `amdsmi_get_temp_metric()` returning `AMDSMI_STATUS_INTERNAL_EXCEPTION` for a sensor the device does not expose**.  
+  - `Monitor::getTempSensorIndex()` resolved the sensor with `std::map::at`, which threw `std::out_of_range` before the caller could test the result for `RSMI_TEMP_TYPE_INVALID`. The intended `AMDSMI_STATUS_NOT_SUPPORTED` path was therefore unreachable, and the throw surfaced as `Exception caught: map::at` on stderr.
+  - `getVoltSensorIndex()` carried the same unguarded lookup and now returns its invalid sentinel instead of throwing.
+
 - **Fixed `amd-smi static --vram` reporting `GDDR7` for LPDDR5 unified memory on APUs (e.g. gfx117x)**.  
   - `AMDSMI_VRAM_TYPE__MAX` aliases the highest real memory type (`LPDDR5`), so a genuine LPDDR5 reading was matched by the `__MAX` special case and mislabeled `GDDR7`. It is now correctly reported as `LPDDR5`.
 
