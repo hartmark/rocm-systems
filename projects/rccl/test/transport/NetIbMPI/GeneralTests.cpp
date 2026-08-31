@@ -10,6 +10,73 @@
 
 #ifdef MPI_TESTS_ENABLED
 
+// Plugin Selection Tests
+//
+// These pin the NCCL_NET -> plugin mapping used by NetIbMPITest::SetUp to the
+// one src/plugin/net.cc uses. They are plain TESTs, not TEST_Fs: they need no
+// ranks and no NIC, and they must run even when the fixture skips.
+//
+// Regression: the fixture used to compare with strcmp, so NCCL_NET=ib-cast
+// matched nothing, fell back to plain IB, and every "(IB-CAST)" suite passed
+// without ever loading the cast plugin.
+
+TEST(NetPluginSelection, ResolvesNameCaseInsensitively) {
+    EXPECT_EQ(ResolveNetPlugin("IB"), &ncclNetIb);
+    EXPECT_EQ(ResolveNetPlugin("ib"), &ncclNetIb);
+    EXPECT_EQ(ResolveNetPlugin("Ib"), &ncclNetIb);
+    EXPECT_EQ(ResolveNetPlugin("IB-CAST"), &netIbCast);
+    EXPECT_EQ(ResolveNetPlugin("ib-cast"), &netIbCast);
+    EXPECT_EQ(ResolveNetPlugin("Ib-Cast"), &netIbCast);
+}
+
+TEST(NetPluginSelection, RocmIbIsAnAliasForIbCast) {
+    EXPECT_EQ(ResolveNetPlugin("ROCM-IB"), &netIbCast);
+    EXPECT_EQ(ResolveNetPlugin("rocm-ib"), &netIbCast);
+    EXPECT_STRCASEEQ(CanonicalNetName("ROCM-IB"), netIbCast.name);
+    EXPECT_EQ(ResolveNetPlugin("ROCM-IB"), ResolveNetPlugin("IB-CAST"))
+        << "ROCM-IB and IB-CAST must select the same plugin";
+}
+
+TEST(NetPluginSelection, UnsetFollowsAinicDefault) {
+    // src/plugin/net.cc picks IB-CAST when NCCL_NET is unset on AINIC hardware.
+    ncclNet_t* expected = rcclUseAinic() ? &netIbCast : &ncclNetIb;
+    EXPECT_EQ(ResolveNetPlugin(nullptr), expected);
+    EXPECT_EQ(ResolveNetPlugin(""), expected) << "empty NCCL_NET must behave as unset";
+}
+
+TEST(NetPluginSelection, NonIbAndUnknownNamesAreDistinguishable) {
+    // Socket is a real plugin, just not one this suite covers -> skip, not fail.
+    EXPECT_EQ(ResolveNetPlugin("Socket"), nullptr);
+    EXPECT_TRUE(IsSocketNetName("Socket"));
+
+    // Deliberately invalid sentinel, not a typo: a name that matches no plugin
+    // must resolve to nullptr so SetUp() fails loudly instead of falling back to IB.
+    EXPECT_EQ(ResolveNetPlugin("NO-SUCH-NET"), nullptr);
+    EXPECT_FALSE(IsSocketNetName("NO-SUCH-NET"));
+
+    // Near-misses of the real names must not resolve either. These guard against
+    // a future prefix/substring compare; only whole-name matches may succeed.
+    for (const char* almost : {"IB-CAST-EXTRA", "IB-CAS", "ROCM", "ROCM-IB-2", "SOCK"}) {
+        EXPECT_EQ(ResolveNetPlugin(almost), nullptr) << almost << " must not resolve";
+        EXPECT_FALSE(IsSocketNetName(almost)) << almost << " must not resolve to Socket";
+    }
+}
+
+// Proves the fixture actually honoured NCCL_NET for this run, so a suite
+// labelled IB-CAST cannot silently report green against plain IB.
+TEST_F(NetIbMPITest, PluginMatchesNcclNetEnv) {
+    const char* env = getenv("NCCL_NET");
+    ASSERT_NE(net_, nullptr);
+    if (const char* expected = CanonicalNetName(env)) {
+        EXPECT_STRCASEEQ(net_->name, expected)
+            << "NCCL_NET=" << env << " but the fixture selected " << net_->name;
+    } else {
+        EXPECT_EQ(net_, rcclUseAinic() ? &netIbCast : &ncclNetIb);
+    }
+    TEST_INFO("Rank %d: NCCL_NET=%s resolved to plugin %s", MPIEnvironment::world_rank,
+              env ? env : "<unset>", net_->name);
+}
+
 // Initialization Tests
 
 TEST_F(NetIbMPITest, InitializePlugin) {

@@ -95,20 +95,44 @@ extern ncclNet_t ncclNetIb;
 // External NET IB-CAST plugin (WRR scheduler, multi-QP, AINIC features)
 extern ncclNet_t netIbCast;
 
-// Select plugin by NCCL_NET env var name; falls back to ncclNetIb.
-inline ncclNet_t* GetPlugin() {
-    static ncclNet_t* plugins[] = {&ncclNetIb, &netIbCast};
-    const char* env = getenv("NCCL_NET");
-    if (env) {
-        for (auto* p : plugins) {
-            if (strcmp(env, p->name) == 0) {
-                TEST_INFO("Rank %d: Using plugin %s", MPIEnvironment::world_rank, p->name);
-                return p;
-            }
-        }
+// Canonicalize an NCCL_NET value the way initPluginLibsOnceFunc() in
+// src/plugin/net.cc does: ROCM-IB is an alias for IB-CAST. Returns nullptr when
+// NCCL_NET is unset or empty.
+//
+// Keep in sync with src/plugin/net.cc. The library and the tests must never
+// disagree about which plugin a given NCCL_NET selects, or a suite can silently
+// exercise a plugin it was not meant to cover.
+inline const char* CanonicalNetName(const char* env) {
+    if (env == nullptr || env[0] == '\0') return nullptr;
+    if (strcasecmp(env, "ROCM-IB") == 0) return netIbCast.name;
+    return env;
+}
+
+// Resolve an NCCL_NET value to one of the two internal IB plugins, mirroring
+// src/plugin/net.cc. Returns nullptr when the value does not name an internal
+// IB plugin, so the caller can distinguish "wrong suite for this config" from
+// "typo" instead of silently falling back.
+//
+// Matching is case-insensitive because the library compares plugin names with
+// strcasecmp; a case-sensitive compare here made every NCCL_NET=ib-cast config
+// fall back to plain IB and pass.
+inline ncclNet_t* ResolveNetPlugin(const char* env) {
+    static ncclNet_t* const plugins[] = {&ncclNetIb, &netIbCast};
+    const char* name = CanonicalNetName(env);
+    // With NCCL_NET unset the library picks IB-CAST on AINIC and IB elsewhere.
+    if (name == nullptr) return rcclUseAinic() ? &netIbCast : &ncclNetIb;
+    for (auto* p : plugins) {
+        if (strcasecmp(name, p->name) == 0) return p;
     }
-    TEST_INFO("Rank %d: Using default plugin %s", MPIEnvironment::world_rank, ncclNetIb.name);
-    return &ncclNetIb;
+    return nullptr;
+}
+
+// True for NCCL_NET values that name a real plugin outside this suite's scope.
+// Running the IB tests under one of these is a deliberate configuration, so the
+// tests skip; anything else that fails to resolve is treated as a typo.
+inline bool IsSocketNetName(const char* env) {
+    const char* name = CanonicalNetName(env);
+    return name != nullptr && strcasecmp(name, ncclNetSocket.name) == 0;
 }
 
 // NET IB-specific resource deleters
@@ -228,9 +252,24 @@ protected:
 
     void SetUp() override {
         MPITestBase::SetUp();
-        net_ = GetPlugin();
         numDevices_ = 0;
         initCtx_ = nullptr;
+
+        const char* env = getenv("NCCL_NET");
+        net_ = ResolveNetPlugin(env);
+        if (net_ == nullptr) {
+            // Never fall back silently: a config that names a plugin this suite
+            // cannot honour must show up in the report, not pass against IB.
+            if (IsSocketNetName(env)) {
+                GTEST_SKIP() << "NCCL_NET=" << env << " selects a non-IB plugin";
+            }
+            net_ = &ncclNetIb;
+            FAIL() << "NCCL_NET=" << env << " names no internal IB plugin; expected one of "
+                   << ncclNetIb.name << ", " << netIbCast.name << " or ROCM-IB (alias for "
+                   << netIbCast.name << ")";
+        }
+        TEST_INFO("Rank %d: Using plugin %s (NCCL_NET=%s)", MPIEnvironment::world_rank,
+                  net_->name, env ? env : "<unset>");
     }
 
     void TearDown() override {
