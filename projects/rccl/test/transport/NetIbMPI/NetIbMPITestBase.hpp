@@ -95,31 +95,13 @@ extern ncclNet_t ncclNetIb;
 // External NET IB-CAST plugin (WRR scheduler, multi-QP, AINIC features)
 extern ncclNet_t netIbCast;
 
-// Canonicalize an NCCL_NET value the way initPluginLibsOnceFunc() in
-// src/plugin/net.cc does: ROCM-IB is an alias for IB-CAST. Returns nullptr when
-// NCCL_NET is unset or empty.
-//
-// Keep in sync with src/plugin/net.cc. The library and the tests must never
-// disagree about which plugin a given NCCL_NET selects, or a suite can silently
-// exercise a plugin it was not meant to cover.
 inline const char* CanonicalNetName(const char* env) {
-    if (env == nullptr || env[0] == '\0') return nullptr;
-    if (strcasecmp(env, "ROCM-IB") == 0) return netIbCast.name;
-    return env;
+    return rcclCanonicalNetName(env);
 }
 
-// Resolve an NCCL_NET value to one of the two internal IB plugins, mirroring
-// src/plugin/net.cc. Returns nullptr when the value does not name an internal
-// IB plugin, so the caller can distinguish "wrong suite for this config" from
-// "typo" instead of silently falling back.
-//
-// Matching is case-insensitive because the library compares plugin names with
-// strcasecmp; a case-sensitive compare here made every NCCL_NET=ib-cast config
-// fall back to plain IB and pass.
 inline ncclNet_t* ResolveNetPlugin(const char* env) {
     static ncclNet_t* const plugins[] = {&ncclNetIb, &netIbCast};
     const char* name = CanonicalNetName(env);
-    // With NCCL_NET unset the library picks IB-CAST on AINIC and IB elsewhere.
     if (name == nullptr) return rcclUseAinic() ? &netIbCast : &ncclNetIb;
     for (auto* p : plugins) {
         if (strcasecmp(name, p->name) == 0) return p;
@@ -127,9 +109,6 @@ inline ncclNet_t* ResolveNetPlugin(const char* env) {
     return nullptr;
 }
 
-// True for NCCL_NET values that name a real plugin outside this suite's scope.
-// Running the IB tests under one of these is a deliberate configuration, so the
-// tests skip; anything else that fails to resolve is treated as a typo.
 inline bool IsSocketNetName(const char* env) {
     const char* name = CanonicalNetName(env);
     return name != nullptr && strcasecmp(name, ncclNetSocket.name) == 0;
@@ -258,8 +237,7 @@ protected:
         const char* env = getenv("NCCL_NET");
         net_ = ResolveNetPlugin(env);
         if (net_ == nullptr) {
-            // Never fall back silently: a config that names a plugin this suite
-            // cannot honour must show up in the report, not pass against IB.
+            // Never fall back silently -- that is what hid the original defect.
             if (IsSocketNetName(env)) {
                 GTEST_SKIP() << "NCCL_NET=" << env << " selects a non-IB plugin";
             }
