@@ -996,7 +996,7 @@ class GpuAgent : public GpuAgentInt {
     uint8_t* host_buffer_begin;               // Cached: start of this XCC's host buffer partition
     std::atomic<size_t> lost_sample_count;    // Per-XCC lost sample counter (atomic for lock-free access)
 
-    /* PM4 fallback resources (per-XCC to avoid races on multi-XCC non-large-BAR systems) */
+    /* PM4 drain resources (per-XCC to avoid races when multiple XCC threads submit concurrently) */
     uint64_t* old_val;                        // Staging area for PM4 atomic return value
     uint32_t* cmd_data;                       // PM4 command buffer
     size_t cmd_data_sz;                       // PM4 command buffer size
@@ -1022,9 +1022,6 @@ class GpuAgent : public GpuAgentInt {
 
     /* Per-XCC data array - cache-line aligned AoS for optimal cache behavior */
     per_xcc_pcs_data_t* xcc_data;  // Array of per-XCC structs (size = num_xcc)
-
-    /* PM4 fallback flag (resources are per-XCC in per_xcc_pcs_data_t) */
-    bool use_pm4_fallback;           // true if large-BAR not available
 
     /* Consumer thread for aggregated callback delivery */
     std::thread consumer_thread;            // Aggregates data and delivers callbacks
@@ -1052,12 +1049,7 @@ class GpuAgent : public GpuAgentInt {
   void PcSamplingDeliverAggregatedSamples(pcs_data_t& pcs_data,
                                           pcs::PcsRuntime::PcSamplingSession& session);
 
-  // @brief Flush device buffers for per-XCC PC sampling architecture (CPU atomic path)
-  hsa_status_t PcSamplingFlushDeviceBuffersPerXCC(pcs_data_t* pcs_data,
-                                                  pcs::PcsRuntime::PcSamplingSession& session,
-                                                  uint32_t xcc_id);
-
-  // @brief Flush device buffers using PM4 commands (fallback for non-large-BAR systems)
+  // @brief Flush device buffers using PM4 commands on the command processor
   hsa_status_t PcSamplingFlushDeviceBuffersPerXCC_PM4(pcs_data_t* pcs_data,
                                                       pcs::PcsRuntime::PcSamplingSession& session,
                                                       uint32_t xcc_id);
