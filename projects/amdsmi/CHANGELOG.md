@@ -8,6 +8,10 @@ Full documentation for amd_smi_lib is available at [https://rocm.docs.amd.com/pr
 
 ### Added
 
+- **Added per-API Python test coverage under `tests/python/integration/`**.
+  - Every public API is driven with one deliberately invalid argument at a time and must reject it, and every getter is additionally called with valid arguments, printed, payload-checked, and required to return `AMDSMI_STATUS_SUCCESS`.
+  - A coverage guard (`tests/python/integration/test_api_coverage.py`) fails when a public API has no test, so new APIs cannot land untested.
+
 - **Exposed `BOOT_FIRMWARE` field in `amd-smi static --ifwi` output**.  
   - The `boot_firmware` value returned by `amdsmi_get_gpu_vbios_info()` now appears under the `IFWI` section (`--vbios` remains available as a legacy alias).
 
@@ -27,12 +31,6 @@ Full documentation for amd_smi_lib is available at [https://rocm.docs.amd.com/pr
   - Populated by `amdsmi_get_gpu_enumeration_info()`, UALoE-backed like the existing `physical_acc_id` field in `amdsmi_asic_info_t`.
   - CLI: `amd-smi list --enumeration` now includes `PHYSICAL_ACC_ID` next to `OAM_ID`.
 
-- **Added `chip_rev_id` and `external_rev_id` to `amdsmi_get_gpu_asic_info()`**.  
-  - Reports the amdgpu `chip_rev` and `external_rev` values from the `AMDGPU_INFO_DEV_INFO` DRM query. Both are distinct from `rev_id`, which is the PCI config-space revision.
-  - `chip_rev_id` is the internal chip revision, or stepping, exactly as the driver reports it; AMD SMI does not decode it into a lifecycle label. `external_rev_id` is family-scoped, so the same value can appear on unrelated ASIC families; interpret it alongside `device_id`.
-  - Exposed under the same names in the Python `amdsmi_get_gpu_asic_info()` dictionary and in `amd-smi static --asic`. The C fields report `0xFFFFFFFF` when unsupported; Python and the CLI render that as `N/A`.
-  - ABI-preserving: the two fields consume two `uint32_t` slots from `amdsmi_asic_info_t.reserved`, so the structure size and the offsets of every pre-existing named field except `reserved` are unchanged. `reserved` moves by two slots and shrinks from 17 to 15 entries.
-
 ### Changed
 
 - **`amdsmi_get_clock_info()` now returns `AMDSMI_STATUS_INPUT_OUT_OF_BOUNDS` for clock values that exceed `INT_MAX`**.  
@@ -46,22 +44,14 @@ Full documentation for amd_smi_lib is available at [https://rocm.docs.amd.com/pr
   - This covers every subcommand that uses the standard human-readable renderer, not only the AI-NIC `RDMA_DEVICES` case that prompted it.
   - `monitor`, `partition`, `topology`, `xgmi`, and the default no-argument output print tables and are unchanged.
 
-- **Added per-API Python test coverage under `tests/python/integration/`**.
-  - Every public API is driven with one deliberately invalid argument at a time and must reject it, and every getter is additionally called with valid arguments, printed, payload-checked, and required to return `AMDSMI_STATUS_SUCCESS`.
-  - A coverage guard (`tests/python/integration/test_api_coverage.py`) fails when a public API has no test, so new APIs cannot land untested.
-
-- **Reorganized the Python test tree into unit, integration and functional tiers**.
-  - `tests/python/unit/` is now hardware-free: the per-API suites that drive a live device moved to `tests/python/integration/`.
-  - Added `tests/python/run_tests.py`, which takes `--unit`, `--integration`, `--functional` and `--cli` and runs any combination in one report; naming no tier runs them all.
-  - `integration_tests.py` now discovers `integration/` rather than `functional/`, and the new `functional_tests.py` discovers `functional/`.
-
-- **The per-API suites require a live device**.
-  - Suites for a processor kind the platform lacks skip their read path but still verify argument rejection.
-  - Positive getter coverage moved from `tests/python/functional/` into `tests/python/integration/`; 88 duplicated functional getter tests were removed. Any CI filter naming those test IDs needs updating.
-
 ### Optimized
 
 ### Resolved Issues
+
+- **Fixed `amdsmi_get_temp_metric()` returning `AMDSMI_STATUS_INTERNAL_EXCEPTION` for a sensor the device does not expose**.  
+  - `Monitor::getTempSensorIndex()` resolved the sensor with `std::map::at`, which threw `std::out_of_range` before the caller could test the result for `RSMI_TEMP_TYPE_INVALID`. The intended `AMDSMI_STATUS_NOT_SUPPORTED` path was therefore unreachable, and the throw surfaced as `Exception caught: map::at` on stderr.
+  - `getVoltSensorIndex()` carried the same unguarded lookup and now returns its invalid sentinel instead of throwing.
+  - Both getters now reject an unrecognized `metric` with `AMDSMI_STATUS_INVAL` up front. The support check happened to catch it first, but the invalid monitor type it left behind has no `Monitor::MakeMonitorPath()` entry, so the rejection no longer depends on that ordering.
 
 - **Fixed `rsmi_dev_reg_table_get()` failing on register-state images that contain no SMN entries**.  
   - The loop-back test ran before the SMN and instance counters reached zero, so an image with no SMN entries re-entered the loop and read past the end of the image; the call then returned an error for a well-formed file.
