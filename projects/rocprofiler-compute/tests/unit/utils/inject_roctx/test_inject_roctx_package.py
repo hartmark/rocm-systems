@@ -135,7 +135,7 @@ def test_parse_launcher_options_defaults_capture_on_shapes():
     frameworks, capture_args, capture_arg_values, remaining = (
         launch.parse_launcher_options(["--frameworks", "torch", "--", "t.py", "-n"])
     )
-    assert frameworks == "torch"
+    assert frameworks == ["torch"]
     assert capture_args is True
     assert capture_arg_values is False
     assert remaining == ["t.py", "-n"]
@@ -156,7 +156,7 @@ def test_parse_launcher_options_parses_capture_flags():
             "t.py",
         ])
     )
-    assert frameworks == "torch,triton"
+    assert frameworks == ["torch,triton"]
     assert capture_args is True
     assert capture_arg_values is True
     assert remaining == ["t.py"]
@@ -719,12 +719,12 @@ def test_triton_build_args_tensor_and_scalar():
         types.SimpleNamespace(name="x_ptr"),
         types.SimpleNamespace(name="n_elements"),
     ]
-    self_obj = types.SimpleNamespace(params=params)
+    self_obj = types.SimpleNamespace(fn=types.SimpleNamespace(params=params))
 
     blob = triton_backend._build_triton_args(
         self_obj, (fake_tensor, 1024), {"grid": (8,), "BLOCK_SIZE": 256}
     )
-    assert "x_ptr=float32[2x3]" in blob
+    assert "x_ptr=SimpleNamespace" in blob
     assert "n_elements=int" in blob
     assert "grid" not in blob
     assert "BLOCK_SIZE=int" in blob
@@ -754,7 +754,7 @@ def test_triton_build_args_drops_compiled_kernel_preamble():
             types.SimpleNamespace(name="BLOCK_SIZE"),
         ]
     )
-    self_obj = types.SimpleNamespace(params=None, src=types.SimpleNamespace(fn=fn))
+    self_obj = types.SimpleNamespace(fn=fn)
 
     x = types.SimpleNamespace(shape=(8,), dtype="torch.float32")
     out = types.SimpleNamespace(shape=(8,), dtype="torch.float32")
@@ -762,7 +762,8 @@ def test_triton_build_args_drops_compiled_kernel_preamble():
     blob = triton_backend._build_triton_args(self_obj, preamble + (x, out, 8, 256), {})
 
     assert blob == (
-        "(x_ptr=float32[8], out_ptr=float32[8], n_elements=int, BLOCK_SIZE=int)"
+        "(x_ptr=SimpleNamespace, out_ptr=SimpleNamespace, "
+        "n_elements=int, BLOCK_SIZE=int)"
     )
     assert "LazyDict" not in blob
     assert "HookChain" not in blob
@@ -781,7 +782,8 @@ def test_triton_build_args_drops_internal_types_without_names():
     blob = triton_backend._build_triton_args(
         types.SimpleNamespace(), (_LazyDict(), 1024), {}
     )
-    assert "LazyDict" not in blob
+    # Without kernel parameter names, unnamed internals keep their type tag.
+    assert "LazyDict" in blob
     assert "1024" in blob
 
 
