@@ -2371,8 +2371,13 @@ TEST_P(KFDSVMRangeTest, RegisterMemoryAlwaysMapped) {
         return;
     }
 
-    const HSAuint64 nPages = 8;
+    /* Big enough that releasing the last pin clears the flag right away
+     * instead of deferring it -- sections 2 to 5 test the clear itself, and
+     * sections 6 and 7 test the deferred path and its bound.
+     */
+    const HSAuint64 nPages = 1024;
     const HSAuint64 BufferSize = nPages * PAGE_SIZE;
+    const HSAuint64 SmallSize = 8 * PAGE_SIZE;
 
     /* Plain anonymous host memory: the registration has to be what creates
      * the SVM range, so HsaSVMRange is deliberately not used here.
@@ -2483,6 +2488,164 @@ TEST_P(KFDSVMRangeTest, RegisterMemoryAlwaysMapped) {
     EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtDeregisterMemory, m_hsakmt_current_ctx, pBuf));
     EXPECT_TRUE(MappedOnNoPage(pBuf, BufferSize))
         << "GPU_ALWAYS_MAPPED still set after the pin was released";
+
+    /* 6. Releasing the last pin on a *small* range deliberately leaves the
+     * flag set.  Clearing it lets KFD merge the range back into its
+     * neighbours, so the next pin has to split it out and re-map it again --
+     * a page table update and a TLB flush per pin, which dominates when the
+     * same small range is pinned and unpinned in a loop.  A repeat pin of a
+     * still-flagged range costs no mapping work at all.
+     */
+    void *pSmall = mmap(NULL, SmallSize, PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    ASSERT_NE(MAP_FAILED, pSmall) << "failed to mmap small buffer";
+
+    EXPECT_TRUE(MappedOnNoPage(pSmall, SmallSize))
+        << "GPU_ALWAYS_MAPPED already set before registration";
+    EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtRegisterMemoryWithFlags, m_hsakmt_current_ctx,
+                               pSmall, SmallSize, pinFlags));
+    EXPECT_TRUE(MappedOnAllPages(pSmall, SmallSize))
+        << "GPU_ALWAYS_MAPPED not set by a pinning registration";
+    EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtDeregisterMemory, m_hsakmt_current_ctx, pSmall));
+    EXPECT_TRUE(MappedOnAllPages(pSmall, SmallSize))
+        << "a small range's clear should be deferred, not issued immediately";
+
+    /* Re-pinning a deferred range has to make it live again.  The flag is
+     * already set so nothing observable changes in the kernel, but the record
+     * must come off the deferred list, or its next release pushes it on a
+     * second time and corrupts the list.  Loop it: this is the shape of the
+     * workload the deferral exists for, and list corruption would not survive
+     * it.
+     */
+    for (int i = 0; i < 200; i++) {
+        ASSERT_SUCCESS(HSAKMT_CALL(hsaKmtRegisterMemoryWithFlags,
+                                   m_hsakmt_current_ctx, pSmall, SmallSize,
+                                   pinFlags));
+        ASSERT_SUCCESS(HSAKMT_CALL(hsaKmtDeregisterMemory,
+                                   m_hsakmt_current_ctx, pSmall));
+    }
+    EXPECT_TRUE(MappedOnAllPages(pSmall, SmallSize))
+        << "repeated pin/unpin of a deferred range lost the flag";
+
+    /* A deferred range still refcounts its pins: two pins take two
+     * deregistrations, and the intermediate one releases nothing.
+     */
+    EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtRegisterMemoryWithFlags, m_hsakmt_current_ctx,
+                               pSmall, SmallSize, pinFlags));
+    EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtRegisterMemoryWithFlags, m_hsakmt_current_ctx,
+                               pSmall, SmallSize, pinFlags));
+    EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtDeregisterMemory, m_hsakmt_current_ctx, pSmall));
+    EXPECT_TRUE(MappedOnAllPages(pSmall, SmallSize));
+    EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtDeregisterMemory, m_hsakmt_current_ctx, pSmall));
+
+    munmap(pSmall, SmallSize);
+
+    /* 7. The deferred set is bounded, or an unpinned range could hold GPU
+     * residency indefinitely.  Deferring more distinct ranges than the cap
+     * allows must clear the least recently unpinned ones.
+     */
+    const int nDeferred = 96;
+    void *pMany[nDeferred];
+    int nMapped = 0;
+
+    for (int i = 0; i < nDeferred; i++) {
+        pMany[i] = mmap(NULL, SmallSize, PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (pMany[i] == MAP_FAILED)
+            break;
+        nMapped++;
+        ASSERT_SUCCESS(HSAKMT_CALL(hsaKmtRegisterMemoryWithFlags,
+                                   m_hsakmt_current_ctx, pMany[i], SmallSize,
+                                   pinFlags));
+        ASSERT_SUCCESS(HSAKMT_CALL(hsaKmtDeregisterMemory,
+                                   m_hsakmt_current_ctx, pMany[i]));
+    }
+    ASSERT_EQ(nDeferred, nMapped) << "failed to mmap the eviction buffers";
+
+    EXPECT_TRUE(MappedOnNoPage(pMany[0], SmallSize))
+        << "the deferred set is not bounded: the oldest range is still flagged "
+           "after " << nDeferred << " ranges were deferred";
+    EXPECT_TRUE(MappedOnAllPages(pMany[nDeferred - 1], SmallSize))
+        << "the most recently unpinned range should still be deferred";
+
+    for (int i = 0; i < nMapped; i++)
+        munmap(pMany[i], SmallSize);
+
+    /* 8. The deferred set is bounded by total bytes as well as by record
+     * count, and the two bounds have to be tested apart: section 7's ranges
+     * are small enough that the record cap always trips first, so it never
+     * reaches the byte cap at all.  These are the largest range that still
+     * defers, so a couple of dozen of them exceed the byte cap while staying
+     * well inside the record cap.
+     *
+     * That the newest is still flagged is also the only check that a range of
+     * exactly the deferral size limit is deferred rather than cleared -- the
+     * bound is inclusive, and every other section is clear of it either way.
+     */
+    const HSAuint64 MaxDeferSize = 2ULL << 20;
+    const int nBig = 20;
+    void *pBig[nBig];
+    int nBigMapped = 0;
+
+    for (int i = 0; i < nBig; i++) {
+        pBig[i] = mmap(NULL, MaxDeferSize, PROT_READ | PROT_WRITE,
+                       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (pBig[i] == MAP_FAILED)
+            break;
+        nBigMapped++;
+        ASSERT_SUCCESS(HSAKMT_CALL(hsaKmtRegisterMemoryWithFlags,
+                                   m_hsakmt_current_ctx, pBig[i], MaxDeferSize,
+                                   pinFlags));
+        ASSERT_SUCCESS(HSAKMT_CALL(hsaKmtDeregisterMemory,
+                                   m_hsakmt_current_ctx, pBig[i]));
+    }
+    ASSERT_EQ(nBig, nBigMapped) << "failed to mmap the byte cap buffers";
+
+    EXPECT_TRUE(MappedOnNoPage(pBig[0], MaxDeferSize))
+        << "the deferred set is not bounded by bytes: the oldest range is "
+           "still flagged after " << nBig << " ranges of " << MaxDeferSize
+        << " bytes were deferred";
+    EXPECT_TRUE(MappedOnAllPages(pBig[nBig - 1], MaxDeferSize))
+        << "a range of exactly the deferral size limit should be deferred";
+
+    for (int i = 0; i < nBigMapped; i++)
+        munmap(pBig[i], MaxDeferSize);
+
+    /* 9. Unmapping a deferred range leaves its record behind, so an mmap that
+     * reuses the address finds itself already covered.  The pin must still
+     * reach the kernel: the new range is a different object and nothing has
+     * set the flag on it, however much the bookkeeping looks like a repeat
+     * pin.  Skipping the ioctl here would make the pin silently advisory --
+     * the exact failure the flag exists to prevent -- and no other section
+     * would notice, so this guards it directly.
+     */
+    void *pReuse = mmap(NULL, SmallSize, PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    ASSERT_NE(MAP_FAILED, pReuse) << "failed to mmap the reuse buffer";
+
+    EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtRegisterMemoryWithFlags, m_hsakmt_current_ctx,
+                               pReuse, SmallSize, pinFlags));
+    EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtDeregisterMemory, m_hsakmt_current_ctx, pReuse));
+    EXPECT_TRUE(MappedOnAllPages(pReuse, SmallSize))
+        << "a small range's clear should be deferred, not issued immediately";
+
+    munmap(pReuse, SmallSize);
+
+    /* MAP_FIXED over an address this test has just unmapped, to force the
+     * reuse rather than hope for it.
+     */
+    void *pAgain = mmap(pReuse, SmallSize, PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+    ASSERT_EQ(pReuse, pAgain) << "failed to remap over the unmapped range";
+
+    EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtRegisterMemoryWithFlags, m_hsakmt_current_ctx,
+                               pAgain, SmallSize, pinFlags));
+    EXPECT_TRUE(MappedOnAllPages(pAgain, SmallSize))
+        << "a pin at an address reused after munmap did not set "
+           "GPU_ALWAYS_MAPPED: the stale record suppressed the ioctl";
+    EXPECT_SUCCESS(HSAKMT_CALL(hsaKmtDeregisterMemory, m_hsakmt_current_ctx, pAgain));
+
+    munmap(pAgain, SmallSize);
 
     munmap(pBuf, BufferSize);
     munmap(pCtrl, BufferSize);
