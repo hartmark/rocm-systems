@@ -24,7 +24,7 @@ struct fmt::formatter<rocprofsys::common::units::frequency<Rep, Period>>
     {
         using rocprofsys::common::units::frequency_suffix;
         auto out = fmt::formatter<Rep>::format(value.count(), ctx);
-        return fmt::format_to(out, " {}", frequency_suffix<Period>::VALUE);
+        return fmt::format_to(out, " {}", frequency_suffix<Period>::k_value);
     }
 };
 
@@ -44,7 +44,7 @@ struct fmt::formatter<rocprofsys::common::units::data_size<Rep, Scale>>
     {
         using rocprofsys::common::units::data_size_suffix;
         auto out = fmt::formatter<Rep>::format(value.count(), ctx);
-        return fmt::format_to(out, " {}", data_size_suffix<Scale>::VALUE);
+        return fmt::format_to(out, " {}", data_size_suffix<Scale>::k_value);
     }
 };
 
@@ -62,6 +62,6 @@ struct fmt::formatter<rocprofsys::common::units::power<Rep, Period>> : fmt::form
     {
         using rocprofsys::common::units::power_suffix;
         auto out = fmt::formatter<Rep>::format(value.count(), ctx);
-        return fmt::format_to(out, " {}", power_suffix<Period>::VALUE);
+        return fmt::format_to(out, " {}", power_suffix<Period>::k_value);
     }
 };

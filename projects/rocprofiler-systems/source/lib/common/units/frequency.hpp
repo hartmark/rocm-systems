@@ -4,12 +4,9 @@
 #pragma once
 
 #include <compare>
-#include <concepts>
-#include <cstdint>
 #include <ratio>
 #include <string_view>
 #include <type_traits>
-#include <utility>
 
 #include "common/units/quantity.hpp"
 
@@ -70,22 +67,22 @@ struct frequency_suffix;
 template <>
 struct frequency_suffix<std::ratio<1>>
 {
-    static constexpr std::string_view VALUE = "Hz";
+    static constexpr std::string_view k_value = "Hz";
 };
 template <>
 struct frequency_suffix<std::kilo>
 {
-    static constexpr std::string_view VALUE = "kHz";
+    static constexpr std::string_view k_value = "kHz";
 };
 template <>
 struct frequency_suffix<std::mega>
 {
-    static constexpr std::string_view VALUE = "MHz";
+    static constexpr std::string_view k_value = "MHz";
 };
 template <>
 struct frequency_suffix<std::giga>
 {
-    static constexpr std::string_view VALUE = "GHz";
+    static constexpr std::string_view k_value = "GHz";
 };
 
 /**

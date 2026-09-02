@@ -4,12 +4,9 @@
 #pragma once
 
 #include <compare>
-#include <concepts>
-#include <cstdint>
 #include <ratio>
 #include <string_view>
 #include <type_traits>
-#include <utility>
 
 #include "common/units/quantity.hpp"
 
@@ -71,27 +68,27 @@ struct power_suffix;
 template <>
 struct power_suffix<std::nano>
 {
-    static constexpr std::string_view VALUE = "nW";
+    static constexpr std::string_view k_value = "nW";
 };
 template <>
 struct power_suffix<std::micro>
 {
-    static constexpr std::string_view VALUE = "uW";
+    static constexpr std::string_view k_value = "uW";
 };
 template <>
 struct power_suffix<std::milli>
 {
-    static constexpr std::string_view VALUE = "mW";
+    static constexpr std::string_view k_value = "mW";
 };
 template <>
 struct power_suffix<std::ratio<1>>
 {
-    static constexpr std::string_view VALUE = "W";
+    static constexpr std::string_view k_value = "W";
 };
 template <>
 struct power_suffix<std::kilo>
 {
-    static constexpr std::string_view VALUE = "kW";
+    static constexpr std::string_view k_value = "kW";
 };
 
 /**
