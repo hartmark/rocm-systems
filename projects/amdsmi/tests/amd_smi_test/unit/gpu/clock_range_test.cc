@@ -14,7 +14,7 @@
 
 #include "amd_smi/amdsmi.h"
 #include "amd_smi/impl/amd_smi_clk_testing.h"
-#include "api_test_framework.h"
+#include "unit_fixtures.h"
 
 namespace {
 

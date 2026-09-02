@@ -84,12 +84,11 @@ Suite names are the only selection mechanism — `<Component><Type>[<Operation>]
                             ReadOnly              ReadWrite
                           (no root)              (root req'd)
 
-  Currently registered:
-    GpuUnit          GpuFunctionalReadOnly     GpuFunctionalReadWrite
-    SystemUnit       SystemFunctionalReadOnly
-                     IfoeFunctionalReadOnly
-                     WslFunctionalReadOnly   (gated)
 ```
+
+Suite names follow `<Component><Type>[<Operation>]`. For the authoritative list,
+run `amdsmitst --gtest_list_tests`; the convention itself is defined in
+[the test design doc](../docs/conceptual/test-design.md).
 
 ## Python — three runners over one shared engine
 
