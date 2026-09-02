@@ -4127,7 +4127,18 @@ hsa_status_t GpuAgent::PcSamplingCreateFromId(HsaPcSamplingTraceId ioctlId,
   size_t totalDeviceAllocSize = deviceAllocSize * pcs_data->num_xcc;
   pcs_data->per_xcc_device_stride = deviceAllocSize;  // Cache for trap handler update in Destroy
 
-  pcs_data->device_data_base = (pcs_sampling_data_t*)finegrain_allocator()(totalDeviceAllocSize, 0);
+  // On write-back local VRAM the GPU counter writes stay in GPU L2 and are never seen by
+  // the CPU drain poll, so a flush during active sampling hangs. On the CPU (large-BAR)
+  // drain path, allocate the shared buffer with AllocateUncached: this sets MTYPE=UC in
+  // the GPU page tables (a GPU-side attribute) so the GPU stores bypass L2 and land in
+  // VRAM, where the CPU poll observes them. The PM4 path invalidates L2 via ACQUIRE_MEM,
+  // so it keeps the cached allocation.
+  core::MemoryRegion::AllocateFlags pcs_alloc_flags = core::MemoryRegion::AllocateNoFlags;
+  if (!pcs_data->use_pm4_fallback) {
+    pcs_alloc_flags = core::MemoryRegion::AllocateUncached;
+  }
+  pcs_data->device_data_base =
+      (pcs_sampling_data_t*)finegrain_allocator()(totalDeviceAllocSize, pcs_alloc_flags);
   if (pcs_data->device_data_base == nullptr) return HSA_STATUS_ERROR_OUT_OF_RESOURCES;
 
   if (AMD::hsa_amd_agents_allow_access(2, agents_to_grant, NULL, pcs_data->device_data_base) !=
@@ -4618,7 +4629,7 @@ hsa_status_t GpuAgent::PcSamplingFlushDeviceBuffersPerXCC(
     uint32_t expected_written = (uint32_t)sample_count;
 
     while (rocr::atomic::Load(bwv_written, std::memory_order_acquire) < expected_written) {
-      // Exit early if session is being stopped - prevents infinite spin during shutdown
+      // Exit early if session is being stopped - prevents infinite spin during shutdown.
       if (!session.isActive()) {
         uint32_t actual_written = rocr::atomic::Load(bwv_written, std::memory_order_acquire);
         if (actual_written < expected_written) {
