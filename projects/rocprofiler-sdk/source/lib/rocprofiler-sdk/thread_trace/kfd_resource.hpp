@@ -129,6 +129,8 @@ public:
 
     void submit(const hsa_ext_amd_aql_pm4_packet_t& packet, hsa_signal_t completion);
     void copy(void* dst, const void* src, size_t size);
+    /// Idempotently destroy the direct queues before caller-owned ATT memory is released.
+    void destroy_queues();
 
 private:
     struct impl;

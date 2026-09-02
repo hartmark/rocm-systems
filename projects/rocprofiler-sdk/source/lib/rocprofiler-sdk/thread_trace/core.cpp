@@ -197,22 +197,27 @@ ThreadTracerAgent::ThreadTracerAgent(thread_trace_parameter_pack _params,
 ThreadTracerAgent::~ThreadTracerAgent()
 {
     ROCP_TRACE << "Destroying ATT Queue...";
-    if(active_traces.load() < 1) return;
-
-    // This is handled in multi-buffer case
-    if(worker_flag && params.num_buffers > 1)
-        ROCP_INFO << "Thread tracer being destroyed with thread trace active";
-    else
-        ROCP_WARNING << "Thread tracer being destroyed with thread trace active";
-
-    if(auto flag = worker_flag) flag->store(WORKER_FLAG_DESTRUCTOR);
-    auto completion = stop_thread_trace();
-    if(completion)
+    if(active_traces.load() >= 1)
     {
-        signal_wait(*completion);
-        iterate_data();
+        // This is handled in multi-buffer case
+        if(worker_flag && params.num_buffers > 1)
+            ROCP_INFO << "Thread tracer being destroyed with thread trace active";
+        else
+            ROCP_WARNING << "Thread tracer being destroyed with thread trace active";
+
+        if(auto flag = worker_flag) flag->store(WORKER_FLAG_DESTRUCTOR);
+        auto completion = stop_thread_trace();
+        if(completion)
+        {
+            signal_wait(*completion);
+            iterate_data();
+        }
+        ROCP_INFO << "Thread trace stopped";
     }
-    ROCP_INFO << "Thread trace stopped; releasing agent resources";
+
+    // control_packet releases the ATT allocations after this destructor body.
+    // Destroy the direct KFD queues first while those allocations are still live.
+    if(queue && queue->kfd_copy_queue) queue->kfd_copy_queue->destroy_queues();
 }
 
 /**

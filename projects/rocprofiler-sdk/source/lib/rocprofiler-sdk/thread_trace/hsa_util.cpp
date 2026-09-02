@@ -197,6 +197,7 @@ att_queue_destroy(att_queue_t& queue)
     queue.copy_signal.reset();
     if(queue.kfd_memory)
     {
+        queue.kfd_copy_queue->destroy_queues();
         queue.kfd_copy_queue.reset();
         for(auto* memory : queue.cpu_buffers)
             queue.kfd_memory->deallocate(memory);

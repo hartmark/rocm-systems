@@ -555,6 +555,10 @@ kfd_memory_pool_t::allocate(size_t size, kfd_memory_kind_t kind, size_t alignmen
     args.size    = allocation_size;
     args.gpu_id  = _impl->gpu_id;
     args.flags   = KFD_IOC_ALLOC_MEM_FLAGS_WRITABLE | KFD_IOC_ALLOC_MEM_FLAGS_EXECUTABLE;
+    // GTT stays fine-grained (COHERENT): it is uncached in GL2, so CP DMA and SDMA writes
+    // are visible to the CPU as soon as the completion signal fires. Making it
+    // non-coherent for bandwidth would require a release fence per copy instead, which
+    // costs an L2 writeback on a path that must not perturb the traced workload.
     args.flags |= (kind == kfd_memory_kind_t::device)
                       ? (KFD_IOC_ALLOC_MEM_FLAGS_VRAM | KFD_IOC_ALLOC_MEM_FLAGS_NO_SUBSTITUTE)
                       : (KFD_IOC_ALLOC_MEM_FLAGS_GTT | KFD_IOC_ALLOC_MEM_FLAGS_COHERENT);
@@ -923,7 +927,11 @@ struct kfd_aql_queue_t::impl
         write_index = load_acquire(queue.wptr);
     }
 
-    ~impl() { queue.memory->deallocate(copy_commands); }
+    ~impl()
+    {
+        queue.destroy();
+        queue.memory->deallocate(copy_commands);
+    }
 
     void submit(const hsa_ext_amd_aql_pm4_packet_t& packet, hsa_signal_t completion)
     {
@@ -1163,7 +1171,14 @@ kfd_copy_queue_t::kfd_copy_queue_t(const std::shared_ptr<kfd_memory_pool_t>& mem
 : _impl{std::make_unique<impl>(memory, max_copy_size)}
 {}
 
-kfd_copy_queue_t::~kfd_copy_queue_t() = default;
+kfd_copy_queue_t::~kfd_copy_queue_t() { destroy_queues(); }
+
+void
+kfd_copy_queue_t::destroy_queues()
+{
+    _impl->aql_queue.reset();
+    _impl->sdma_queue.reset();
+}
 
 void
 kfd_copy_queue_t::submit(const hsa_ext_amd_aql_pm4_packet_t& packet, hsa_signal_t completion)
