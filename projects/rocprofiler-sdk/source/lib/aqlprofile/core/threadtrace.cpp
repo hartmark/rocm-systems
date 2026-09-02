@@ -522,23 +522,8 @@ aqlprofile_att_codeobj_marker(hsa_ext_amd_aql_pm4_packet_t*        packet,
                               aqlprofile_memory_dealloc_callback_t dealloc_cb,
                               void*                                userdata)
 {
-    try
-    {
-        return aql_profile_v2::_internal_aqlprofile_att_codeobj_marker(
-            packet, handle, data, alloc_cb, dealloc_cb, userdata);
-    } catch(hsa_status_t err)
-    {
-        ERR_LOGGING("{}", static_cast<int>(err));
-        return err;
-    } catch(std::exception& e)
-    {
-        ERR_LOGGING("{}", e.what());
-        return HSA_STATUS_ERROR;
-    } catch(...)
-    {
-        return HSA_STATUS_ERROR;
-    }
-    return HSA_STATUS_SUCCESS;
+    return aql_profile_v2::_internal_aqlprofile_att_codeobj_marker(
+        packet, handle, data, alloc_cb, dealloc_cb, userdata);
 }
 
 PUBLIC_API hsa_status_t
@@ -546,21 +531,7 @@ aqlprofile_att_iterate_data(aqlprofile_handle_t            handle,
                             aqlprofile_att_data_callback_t callback,
                             void*                          userdata)
 {
-    try
-    {
-        return aql_profile_v2::_internal_aqlprofile_att_iterate_data(handle, callback, userdata);
-    } catch(hsa_status_t err)
-    {
-        ERR_LOGGING("{}", static_cast<int>(err));
-        return err;
-    } catch(std::exception& e)
-    {
-        ERR_LOGGING("{}", e.what());
-        return HSA_STATUS_ERROR;
-    } catch(...)
-    {
-        return HSA_STATUS_ERROR;
-    }
+    return aql_profile_v2::_internal_aqlprofile_att_iterate_data(handle, callback, userdata);
 }
 
 PUBLIC_API hsa_status_t
@@ -572,37 +543,14 @@ aqlprofile_att_create_packets(aqlprofile_handle_t*                  handle,
                               aqlprofile_memory_copy_t              copy_fn,
                               void*                                 userdata)
 {
-    try
-    {
-        return aql_profile_v2::_internal_aqlprofile_att_create_packets(
-            handle, packets, profile, alloc_cb, dealloc_cb, copy_fn, userdata);
-    } catch(hsa_status_t err)
-    {
-        ERR_LOGGING("{}", static_cast<int>(err));
-        return err;
-    } catch(std::exception& e)
-    {
-        ERR_LOGGING("{}", e.what());
-        return HSA_STATUS_ERROR;
-    } catch(...)
-    {
-        return HSA_STATUS_ERROR;
-    }
+    return aql_profile_v2::_internal_aqlprofile_att_create_packets(
+        handle, packets, profile, alloc_cb, dealloc_cb, copy_fn, userdata);
 };
 
 PUBLIC_API void
 aqlprofile_att_delete_packets(aqlprofile_handle_t handle)
 {
-    try
-    {
-        MemoryManager::DeleteManager(handle.handle);
-    } catch(std::exception& e)
-    {
-        return;
-    } catch(...)
-    {
-        return;
-    }
+    MemoryManager::DeleteManager(handle.handle);
 }
 
 }  // extern "C"
