@@ -100,7 +100,11 @@ consumer_loop(
         // Drain priority: process pending data even if a stop has been signaled.
         if(!slot.filled.load())
         {
-            if(stopping.load()) return;
+            if(stopping.load())
+            {
+                ROCP_INFO << "Consumer for slot " << parameters.slot_index << " exiting";
+                return;
+            }
             continue;
         }
 
@@ -217,6 +221,7 @@ producer_loop(
         ROCP_INFO << "Stopping the trace";
         att_queue_submit(queue, &parameters.control_packet->after_krn_pkt.at(0), &submit_signal);
         signal_wait(submit_signal);
+        ROCP_INFO << "Trace stop packet completed";
     };
 
     // Drain remaining ATT data after a stop; waits for a free slot to land it in.
@@ -226,6 +231,7 @@ producer_loop(
         buffer_packet.reset_current_buffer();
         ROCP_INFO << "Iterate data with size: " << wptr.size;
         send_to_consumer(wptr.data, wptr.size, ROCPROFILER_THREAD_TRACE_SHADER_DATA_FLAGS_END, idx);
+        ROCP_INFO << "Drain copy completed";
     };
 
     std::array<uint64_t, 4> header_plus_zeros{};  // Used for warmup the decoder path
@@ -263,6 +269,9 @@ producer_loop(
             // the swap has executed.
             att_queue_submit(queue, &status->packet, &submit_signal);
             signal_wait(submit_signal);
+            ROCP_INFO << "Buffer swap completed (gpu_full=" << status->gpu_full
+                      << ", size=" << status->size << ", read_offset=" << status->read_offset
+                      << ")";
 
             ROCP_FATAL_IF(status->size != buffer_size)
                 << "GPU buffer overflow: " << status->size << " vs " << buffer_size;
@@ -273,6 +282,8 @@ producer_loop(
             const bool cpu_full = (slot_idx == num_buffers);
 
             if(cpu_full || status->gpu_full) stop_trace();
+            ROCP_INFO_IF(cpu_full || status->gpu_full) << "Overflow stop (cpu_full=" << cpu_full
+                                                       << ", gpu_full=" << status->gpu_full << ")";
 
             int flags = ROCPROFILER_THREAD_TRACE_SHADER_DATA_FLAGS_NONE;
             if(cpu_full) flags |= ROCPROFILER_THREAD_TRACE_SHADER_DATA_FLAGS_CPU_BUFFER_FULL;
@@ -291,6 +302,8 @@ producer_loop(
 
                 for(auto& packet : parameters.control_packet->before_krn_pkt)
                     att_queue_submit(queue, &packet, nullptr);
+                ROCP_INFO << "Trace restarted after overflow ("
+                          << parameters.control_packet->before_krn_pkt.size() << " packets)";
             }
             // The status_query test verifies we immediately poll again after consuming a
             // buffer, so skip the backoff when a flip just occurred.
@@ -304,6 +317,7 @@ producer_loop(
     // Signal all consumers to exit. Taking each slot mutex before notifying
     // prevents a consumer from missing the wakeup while entering cv.wait().
     parameters.shared->stopping.store(true);
+    ROCP_INFO << "Producer draining complete; notifying consumers to exit";
     for(size_t i = 0; i < num_buffers; i++)
     {
         auto lk = std::unique_lock{buffers[i].mut};

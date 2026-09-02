@@ -212,6 +212,7 @@ ThreadTracerAgent::~ThreadTracerAgent()
         signal_wait(*completion);
         iterate_data();
     }
+    ROCP_INFO << "Thread trace stopped; releasing agent resources";
 }
 
 /**
@@ -284,6 +285,7 @@ ThreadTracerAgent::load_codeobj(code_object_id_t id, uint64_t addr, uint64_t siz
     auto packet = factory->construct_load_marker_packet(id, addr, size);
     auto sig    = att_queue_submit(*queue, &packet->packet, true);
     if(sig) signal_wait(*sig);
+    ROCP_INFO << "Codeobj load marker " << id << " submitted while trace active";
 }
 
 void
@@ -299,6 +301,7 @@ ThreadTracerAgent::unload_codeobj(code_object_id_t id)
     auto packet = factory->construct_unload_marker_packet(id);
     auto sig    = att_queue_submit(*queue, &packet->packet, true);
     if(sig) signal_wait(*sig);
+    ROCP_INFO << "Codeobj unload marker " << id << " submitted while trace active";
 }
 
 std::shared_ptr<att_signal_t>
@@ -392,12 +395,15 @@ ThreadTracerAgent::stop_thread_trace()
         int expected = WORKER_FLAG_RUNNING;
         worker_flag->compare_exchange_strong(expected, WORKER_FLAG_STOP);
 
+        ROCP_INFO << "Joining thread trace producer (worker flag was " << expected << ")";
         if(producer.joinable()) producer.join();
+        ROCP_INFO << "Producer joined; joining " << consumers.size() << " consumers";
         for(auto& t : consumers)
             if(t.joinable()) t.join();
         consumers.clear();
         active_traces.fetch_sub(1);
         worker_flag = nullptr;
+        ROCP_INFO << "All thread trace workers joined";
         return nullptr;
     }
     else

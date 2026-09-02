@@ -536,8 +536,10 @@ kfd_memory_pool_t::~kfd_memory_pool_t()
             allocations.emplace_back(entry);
         _impl->allocations.clear();
     }
+    ROCP_INFO << "Releasing " << allocations.size() << " KFD allocations for GPU " << _impl->gpu_id;
     for(const auto& [ptr, allocation] : allocations)
         _impl->release(ptr, allocation);
+    ROCP_INFO << "KFD allocations released for GPU " << _impl->gpu_id;
 }
 
 void*
@@ -859,10 +861,12 @@ struct direct_queue_t
     {
         if(created)
         {
+            ROCP_INFO << "Destroying KFD queue " << queue_id;
             auto args   = kfd_ioctl_destroy_queue_args{queue_id, 0};
             auto result = kfd_ioctl(memory->kfd_fd(), AMDKFD_IOC_DESTROY_QUEUE, &args);
             ROCP_WARNING_IF(result != 0)
                 << "AMDKFD_IOC_DESTROY_QUEUE failed: " << std::strerror(errno);
+            ROCP_INFO_IF(result == 0) << "KFD queue " << queue_id << " destroyed";
             created = false;
         }
         if(doorbell_mapping)

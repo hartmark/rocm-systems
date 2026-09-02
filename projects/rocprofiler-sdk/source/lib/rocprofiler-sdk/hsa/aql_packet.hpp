@@ -24,6 +24,7 @@
 
 #include "lib/aqlprofile/aqlprofile.hpp"
 #include "lib/common/container/small_vector.hpp"
+#include "lib/common/logging.hpp"
 #include "lib/common/synchronized.hpp"
 
 #include <rocprofiler-sdk/experimental/spm.h>
@@ -201,7 +202,12 @@ struct TraceMemoryPool
     std::shared_ptr<thread_trace::kfd_copy_queue_t>  kfd_copy_queue{};
 
     aqlprofile_handle_t handle{};
-    ~TraceMemoryPool() { aqlprofile_att_delete_packets(this->handle); };
+    ~TraceMemoryPool()
+    {
+        ROCP_INFO_IF(handle.handle != 0)
+            << "Releasing ATT packet buffers (handle " << handle.handle << ")";
+        aqlprofile_att_delete_packets(this->handle);
+    };
 
     static hsa_status_t Alloc(void** ptr, size_t size, desc_t flags, void* data);
     static void         Free(void* ptr, void* data);

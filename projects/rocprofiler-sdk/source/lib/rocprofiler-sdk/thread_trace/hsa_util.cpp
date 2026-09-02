@@ -193,6 +193,7 @@ att_queue_create(rocprofiler_agent_id_t             agent_id,
 void
 att_queue_destroy(att_queue_t& queue)
 {
+    ROCP_INFO << "Destroying ATT queue and releasing its buffers";
     queue.copy_signal.reset();
     if(queue.kfd_memory)
     {
@@ -215,6 +216,7 @@ att_queue_destroy(att_queue_t& queue)
         queue.hsa_queue = nullptr;
     }
     queue.cpu_buffers.clear();
+    ROCP_INFO << "ATT queue destroyed";
 }
 
 void
