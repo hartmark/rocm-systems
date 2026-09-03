@@ -75,6 +75,9 @@ Full documentation for amd_smi_lib is available at [https://rocm.docs.amd.com/pr
 - **Fixed `amd-smi metric --usage` reporting APU IPU read/write bandwidth without a unit**.  
   - `APU_AVERAGE_IPU_READS` and `APU_AVERAGE_IPU_WRITES` printed bare numbers while the adjacent DRAM counters carried `MB/s`. All four bandwidth counters now report `MB/s`, and the header documents the unit for each.
 
+- **Fixed an uninitialized processor index that let the CPU and Core APIs read an unrelated CPU socket**.  
+  - Passing a GPU, NIC, or switch handle to a CPU or Core API could return another socket's telemetry with `AMDSMI_STATUS_SUCCESS`. Such handles are now rejected. Calls that pass a CPU or Core handle are unaffected.
+
 - **Fixed `amd-smi static --vram` reporting `GDDR7` for LPDDR5 unified memory on APUs (e.g. gfx117x)**.  
   - `AMDSMI_VRAM_TYPE__MAX` aliases the highest real memory type (`LPDDR5`), so a genuine LPDDR5 reading was matched by the `__MAX` special case and mislabeled `GDDR7`. It is now correctly reported as `LPDDR5`.
 
